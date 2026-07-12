@@ -11,15 +11,6 @@ export interface ScheduleConfig {
 }
 
 export const SCHEDULE_CONFIGS: Record<string, ScheduleConfig> = {
-  'weekly-boss-dungeon': {
-    id: 'weekly-boss-dungeon',
-    name: 'Weekly Boss Dungeon',
-    type: 'weekly',
-    intervalDays: 7,
-    activeDurationHours: 24,
-    penaltyEnabled: true,
-    weekendOnly: true,
-  },
   // Future extensible schedules
   'daily-quests': {
     id: 'daily-quests',

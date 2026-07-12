@@ -55,15 +55,6 @@ export type ScreenName =
   | 'settings'
   | 'evaluation';
 
-export interface BossDungeonEvent {
-  id: string;
-  name: string;
-  description: string;
-  expiresAt: Date;
-  xpReward: number;
-  coinReward: number;
-}
-
 // ============================================================
 // Core Data Models
 // ============================================================
@@ -103,9 +94,6 @@ export interface PlayerProfile {
   combatPromptAfter?: Date;
   streakShieldActive?: boolean;
   xpAmplifierActive?: boolean;
-  lastBossDungeonDate?: Date;
-  nextBossDungeonDate?: Date;
-  bossDungeonStatus?: 'locked' | 'available' | 'completed' | 'expired';
 }
 
 export interface PlayerStat {
@@ -221,7 +209,6 @@ export interface SystemSettings {
   lastExportDate?: Date;
   playerName?: string;
   onboardingComplete: boolean;
-  bossDungeonPenaltyEnabled?: boolean;
   systemPaused?: boolean;
 }
 

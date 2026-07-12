@@ -20,10 +20,8 @@ import { AppLayout } from '@/components/AppLayout';
 import { SystemNotification } from '@/components/SystemNotification';
 import { LevelUpModal } from '@/components/LevelUpModal';
 import { LoadingScreen } from '@/components/LoadingScreen';
-import { BossDungeonAlert } from '@/components/BossDungeonAlert';
 import { PenaltyZoneModal } from '@/components/PenaltyZoneModal';
 import { CombatTrainingPrompt } from '@/components/CombatTrainingPrompt';
-import { CinematicBossNotification } from '@/components/CinematicBossNotification';
 import { SplashScreen } from '@/components/SplashScreen';
 import { SuspensionScreen } from '@/components/SuspensionScreen';
 
@@ -131,10 +129,8 @@ function App() {
       )}
       <SystemNotification />
       <LevelUpModal />
-      <BossDungeonAlert />
       <PenaltyZoneModal />
       <CombatTrainingPrompt />
-      <CinematicBossNotification />
     </div>
   );
 }

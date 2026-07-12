@@ -97,17 +97,6 @@ export function SettingsScreen() {
         />
       </SettingsSection>
 
-      {/* Boss Dungeon Settings */}
-      <SettingsSection title="Boss Dungeon">
-        <ToggleSetting
-          icon={Shield}
-          label="Boss Dungeon Penalty"
-          description="Resets streak and deducts XP on expiration"
-          enabled={settings.bossDungeonPenaltyEnabled ?? true}
-          onChange={(v) => updateSettings({ bossDungeonPenaltyEnabled: v })}
-        />
-      </SettingsSection>
-
       {/* System Status */}
       <SettingsSection title="System Status">
         <ToggleSetting

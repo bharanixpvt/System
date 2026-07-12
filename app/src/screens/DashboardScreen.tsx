@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { motion } from 'framer-motion';
 import {
@@ -15,11 +14,7 @@ import { RANK_LEVEL_RANGES } from '@/types';
 import type { ScreenName } from '@/types';
 
 export function DashboardScreen() {
-  const { profile, stats, quests, navigateTo, checkBossDungeonSchedule } = useGameStore();
-
-  useEffect(() => {
-    checkBossDungeonSchedule();
-  }, [checkBossDungeonSchedule]);
+  const { profile, stats, quests, navigateTo } = useGameStore();
 
   if (!profile) return null;
 

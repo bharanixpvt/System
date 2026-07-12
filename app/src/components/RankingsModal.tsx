@@ -11,7 +11,7 @@ const RANK_PERKS: Record<string, string> = {
   'SS Rank': 'Double Dungeon Coin Yield',
   'SSS Rank': 'Fatigue Limit Extended to 110',
   'National Level': 'All active daily quest XP boosted by 15%',
-  'Monarch Level': 'Free weekly Boss Beacon in shop',
+  'Monarch Level': 'Prime-tier Boss Dungeon access',
   'Shadow Monarch': 'Fatigue recovery doubled & Monarch Command active (unlimited premium features)',
 };
 

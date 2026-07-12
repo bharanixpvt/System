@@ -5,6 +5,16 @@ import {
   Castle, Lock, Clock, Zap, ChevronRight, X, Sword, Shield, Timer, Trophy, Sliders, Plus, Trash2
 } from 'lucide-react';
 import { playButtonPress } from '@/lib/audio';
+import { RANK_ORDER } from '@/types';
+
+const BOSS_DIFFICULTY_TIERS = [
+  'Initiate', 'Challenger', 'Vanguard', 'Elite', 'Champion', 'Slayer',
+  'Ascendant', 'Legend', 'National', 'Monarch', 'Prime',
+];
+
+function getBossDifficulty(rank?: import('@/types').Rank): number {
+  return Math.max(1, RANK_ORDER.indexOf(rank || 'E Rank') + 1);
+}
 
 export function DungeonScreen() {
   const { dungeons, completeDungeon, profile, dungeonTimerBonusSeconds, dungeonDifficultyReduction, consumeDungeonAids, settings } = useGameStore();
@@ -48,8 +58,9 @@ export function DungeonScreen() {
 
       <div className="space-y-3">
         {visibleDungeons.map((dungeon, index) => {
-          const isBoss = dungeon.id === 'dungeon-weekly-boss';
-          const isLocked = dungeon.status === 'locked' || (isBoss && dungeon.status !== 'available');
+          const isBoss = dungeon.type === 'boss';
+          const isLocked = dungeon.status === 'locked';
+          const bossDifficulty = isBoss ? getBossDifficulty(profile?.currentRank) : dungeon.difficulty;
           
           let cardBorderColor = dungeon.status !== 'locked' ? `${dungeon.color}20` : undefined;
           let cardBoxShadow = undefined;
@@ -91,7 +102,7 @@ export function DungeonScreen() {
                 <div className="flex items-center gap-3">
                   <div
                     className="w-12 h-12 rounded-xl flex items-center justify-center"
-                    style={{ backgroundColor: isBoss && dungeon.status === 'available' ? 'rgba(239, 68, 68, 0.15)' : `${dungeon.color}15` }}
+                    style={{ backgroundColor: isBoss ? 'rgba(239, 68, 68, 0.15)' : `${dungeon.color}15` }}
                   >
                     {isLocked ? (
                       <Lock size={20} style={{ color: isBoss ? '#EF4444' : dungeon.color }} />
@@ -115,7 +126,7 @@ export function DungeonScreen() {
                       ) : null}
                       {isBoss && (
                         <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-red-950/50 text-red-500 border border-red-500/20">
-                          BOSS DUNGEON
+                          {BOSS_DIFFICULTY_TIERS[bossDifficulty - 1]} BOSS
                         </span>
                       )}
                       {isBoss && dungeon.status === 'completed' && (
@@ -133,9 +144,9 @@ export function DungeonScreen() {
                     {dungeon.status === 'locked' && dungeon.requirements && (
                       <p className="text-[10px] text-[#FBBF24] mt-1">{dungeon.requirements}</p>
                     )}
-                    {isBoss && dungeon.status === 'available' && (
+                    {isBoss && (
                       <p className="text-[10px] text-[#EF4444] font-bold mt-1">
-                        Time Remaining: 24h evaluation window active!
+                        Difficulty {bossDifficulty}/11 · {profile?.currentRank || 'E Rank'} · {BOSS_DIFFICULTY_TIERS[bossDifficulty - 1]}
                       </p>
                     )}
                   </div>
@@ -175,9 +186,13 @@ function DungeonActive({ dungeon, rankLevel, timerBonusSeconds, difficultyReduct
 
   const offset = dungeon.difficultyOffset || 0;
   const permBonus = (profile as any)?.dungeonTimerPermanentBonusSeconds || 0;
+  const isBoss = dungeon.type === 'boss';
+  const bossDifficulty = getBossDifficulty(profile?.currentRank);
 
   const rankPressure = Math.floor(rankLevel / 15);
-  const effectiveDifficulty = Math.min(5, Math.max(1, dungeon.difficulty + rankPressure - difficultyReduction + offset));
+  const effectiveDifficulty = isBoss
+    ? bossDifficulty
+    : Math.min(5, Math.max(1, dungeon.difficulty + rankPressure - difficultyReduction + offset));
   const timeLimit = Math.max(120, dungeon.estimatedMinutes * 60 - rankPressure * 30 + timerBonusSeconds + permBonus - offset * 30);
   
   const [timer, setTimer] = useState(timeLimit);
@@ -234,7 +249,8 @@ function DungeonActive({ dungeon, rankLevel, timerBonusSeconds, difficultyReduct
         </div>
         <p className="text-xs text-white/40">
           Time remaining · Difficulty {effectiveDifficulty}/5
-          {offset > 0 && <span className="text-amber-400 ml-1">(+{offset} Escalated)</span>}
+          {isBoss && <span className="text-[#EF4444] ml-1">({BOSS_DIFFICULTY_TIERS[effectiveDifficulty - 1]})</span>}
+          {!isBoss && offset > 0 && <span className="text-amber-400 ml-1">(+{offset} Escalated)</span>}
           {permBonus > 0 && <span className="text-[#CBD5E1] ml-1">(+{permBonus}s Permanent)</span>}
         </p>
 

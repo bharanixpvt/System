@@ -23,7 +23,6 @@ import type {
   ShopItem,
   QuestCategory,
   QuestType,
-  BossDungeonEvent,
 } from '@/types';
 import {
   createDefaultStats,
@@ -70,7 +69,7 @@ import {
   importAllData,
   resetAllData,
 } from '@/db';
-import { playQuestCompleted, playLevelUp, playAchievement, playRankUp, playPenalty, playNotification, playBossAlert } from '@/lib/audio';
+import { playQuestCompleted, playLevelUp, playAchievement, playRankUp, playPenalty, playNotification } from '@/lib/audio';
 
 // ============================================================
 // Store State Interface
@@ -104,8 +103,6 @@ interface SystemState {
   showRankUp: boolean;
   showAchievement: boolean;
   showSystemNotification: string | null;
-  activeBossDungeon: BossDungeonEvent | null;
-  showCinematicBossNotification: boolean;
   dungeonTimerBonusSeconds: number;
   dungeonDifficultyReduction: number;
   
@@ -132,12 +129,7 @@ interface SystemState {
   // Dungeon Actions
   enterDungeon: (dungeonId: string) => Promise<void>;
   completeDungeon: (dungeonId: string, timeMinutes: number, increaseDifficulty?: boolean) => Promise<void>;
-  summonBossDungeon: () => void;
-  dismissBossDungeon: () => void;
   dismissPenaltyZone: () => void;
-  checkBossDungeonSchedule: () => Promise<void>;
-  forceUnlockBossDungeon: () => Promise<void>;
-  dismissCinematicBossNotification: () => void;
   setCombatTrainingStatus: (status: 'accepted' | 'held' | 'declined') => Promise<void>;
   useQuestUtility: (questId: string, itemId: string) => Promise<void>;
   activateUtility: (itemId: string) => Promise<void>;
@@ -213,9 +205,25 @@ const defaultSettings: SystemSettings = {
   evalReminderDays: 3,
   gymEquipmentEnabled: false,
   onboardingComplete: false,
-  bossDungeonPenaltyEnabled: true,
   systemPaused: false,
 };
+
+/** Converts legacy weekly/monthly boss data into the single permanent boss dungeon. */
+function normalizeBossDungeons(dungeons: Dungeon[]): Dungeon[] {
+  const defaultBoss = createDefaultDungeons().find(d => d.id === 'dungeon-boss-1')!;
+  const legacyBosses = dungeons.filter(d => d.type === 'boss');
+  const previousBoss = legacyBosses.find(d => d.id === 'dungeon-boss-1') ?? legacyBosses[0];
+
+  return [
+    ...dungeons.filter(d => d.type !== 'boss'),
+    {
+      ...defaultBoss,
+      bestTime: previousBoss?.bestTime,
+      completedAt: previousBoss?.completedAt,
+      status: 'locked',
+    },
+  ];
+}
 
 // ============================================================
 // Store Implementation
@@ -248,8 +256,6 @@ export const useGameStore = create<SystemState>((set, get) => ({
   showRankUp: false,
   showAchievement: false,
   showSystemNotification: null,
-  activeBossDungeon: null,
-  showCinematicBossNotification: false,
   dungeonTimerBonusSeconds: 0,
   dungeonDifficultyReduction: 0,
   
@@ -313,6 +319,10 @@ export const useGameStore = create<SystemState>((set, get) => ({
         await saveQuests(updatedQuests);
       }
       
+      const loadedDungeons = dungeons.length > 0 ? dungeons : createDefaultDungeons();
+      const normalizedDungeons = normalizeBossDungeons(loadedDungeons);
+      await saveDungeons(normalizedDungeons);
+
       set({
         profile,
         stats: stats.length > 0 ? stats : createDefaultStats(),
@@ -323,7 +333,7 @@ export const useGameStore = create<SystemState>((set, get) => ({
         inventory,
         history,
         settings: settings || defaultSettings,
-        dungeons: dungeons.length > 0 ? dungeons : createDefaultDungeons(),
+        dungeons: normalizedDungeons,
         trainingPaths: trainingPaths.length > 0 ? trainingPaths : createDefaultTrainingPaths(),
         currentScreen: 'dashboard',
         isLoading: false,
@@ -331,11 +341,6 @@ export const useGameStore = create<SystemState>((set, get) => ({
         penaltyZone: settings?.systemPaused ? false : updatedQuests.filter(q => q.status === 'failed').length >= 3,
       });
 
-      // Evaluate boss dungeon schedule (skip if paused)
-      if (!settings?.systemPaused) {
-        await get().checkBossDungeonSchedule();
-      }
-      
     } catch (error) {
       console.error('Initialization error:', error);
       set({ isLoading: false, currentScreen: 'opening' });
@@ -381,9 +386,6 @@ export const useGameStore = create<SystemState>((set, get) => ({
       maxPushups: data.maxPushups,
       maxPlank: data.maxPlank,
       combatPromptAfter: new Date(now.getTime() + 7 * 86400000),
-      lastBossDungeonDate: undefined,
-      nextBossDungeonDate: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000),
-      bossDungeonStatus: 'locked',
     };
     
     // Calculate initial stats based on onboarding
@@ -402,7 +404,7 @@ export const useGameStore = create<SystemState>((set, get) => ({
     const titles = createDefaultTitles();
     const dungeons = createDefaultDungeons();
     const trainingPaths = createDefaultTrainingPaths();
-    const settings: SystemSettings = { ...defaultSettings, onboardingComplete: true, playerName: data.name, screenTimeLimit: data.screenTime || 240, bossDungeonPenaltyEnabled: true };
+    const settings: SystemSettings = { ...defaultSettings, onboardingComplete: true, playerName: data.name, screenTimeLimit: data.screenTime || 240 };
     
     await Promise.all([
       saveProfile(profile),
@@ -766,7 +768,7 @@ export const useGameStore = create<SystemState>((set, get) => ({
     const dungeon = state.dungeons.find(d => d.id === dungeonId);
     if (!dungeon) return;
     
-    dungeon.status = 'completed';
+    dungeon.status = dungeon.type === 'boss' ? 'locked' : 'completed';
     dungeon.completedAt = new Date();
     if (increaseDifficulty) {
       dungeon.difficultyOffset = (dungeon.difficultyOffset || 0) + 1;
@@ -779,12 +781,6 @@ export const useGameStore = create<SystemState>((set, get) => ({
     
     const xpResult = addXP(state.profile, totalXP);
     xpResult.profile.coins += dungeon.coinReward;
-    
-    if (dungeonId === 'dungeon-weekly-boss') {
-      xpResult.profile.bossDungeonStatus = 'locked' as const;
-      xpResult.profile.lastBossDungeonDate = new Date();
-      xpResult.profile.nextBossDungeonDate = undefined;
-    }
     
     const historyEntry: HistoryEntry = {
       id: `hist-${Date.now()}`,
@@ -816,19 +812,6 @@ export const useGameStore = create<SystemState>((set, get) => ({
     await get().checkAchievements();
   },
 
-  summonBossDungeon: () => {
-    const event: BossDungeonEvent = {
-      id: `boss-${Date.now()}`,
-      name: 'Rift Guardian',
-      description: 'An unstable gate has opened. Clear the encounter before it collapses.',
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000),
-      xpReward: 150,
-      coinReward: 60,
-    };
-    set({ activeBossDungeon: event });
-  },
-
-  dismissBossDungeon: () => set({ activeBossDungeon: null }),
   dismissPenaltyZone: () => set({ penaltyZone: false }),
 
   setCombatTrainingStatus: async (status) => {
@@ -903,9 +886,17 @@ export const useGameStore = create<SystemState>((set, get) => ({
 
   activateUtility: async (itemId) => {
     const state = get(); const item = state.inventory.find(i => i.id === itemId); if (!item || (item.quantity || 1) < 1 || !state.profile) return;
+    const bossDungeon = state.dungeons.find(d => d.id === 'dungeon-boss-1');
+    if (itemId === 'boss-beacon' && bossDungeon?.status === 'available') {
+      set({ systemMessage: 'SYSTEM: Boss Dungeon is already unlocked.' });
+      return;
+    }
     const depleted = { ...item, quantity: (item.quantity || 1) - 1 };
     const inventory = state.inventory.map(i => i.id === itemId ? depleted : i);
     const profile = { ...state.profile };
+    const dungeons = itemId === 'boss-beacon'
+      ? state.dungeons.map(d => d.id === 'dungeon-boss-1' ? { ...d, status: 'available' as const, unlockedAt: new Date() } : d)
+      : state.dungeons;
     if (itemId === 'streak-shield') profile.streakShieldActive = true;
     if (itemId === 'xp-amplifier') profile.xpAmplifierActive = true;
     if (itemId === 'xp-catalyst') {
@@ -921,9 +912,8 @@ export const useGameStore = create<SystemState>((set, get) => ({
       // Typecast to any to allow dynamic profile parameters
       (profile as any).dungeonTimerPermanentBonusSeconds = ((profile as any).dungeonTimerPermanentBonusSeconds || 0) + 30;
     }
-    await Promise.all([saveProfile(profile), saveInventoryItem(depleted)]);
-    if (itemId === 'boss-beacon') await get().forceUnlockBossDungeon();
-    set({ profile, inventory, dungeonTimerBonusSeconds: itemId === 'time-crystal' ? state.dungeonTimerBonusSeconds + 120 : state.dungeonTimerBonusSeconds, dungeonDifficultyReduction: itemId === 'dungeon-scout' ? state.dungeonDifficultyReduction + 1 : state.dungeonDifficultyReduction, systemMessage: `SYSTEM: ${item.name} activated.` });
+    await Promise.all([saveProfile(profile), saveInventoryItem(depleted), ...(itemId === 'boss-beacon' ? [saveDungeons(dungeons)] : [])]);
+    set({ profile, inventory, dungeons, dungeonTimerBonusSeconds: itemId === 'time-crystal' ? state.dungeonTimerBonusSeconds + 120 : state.dungeonTimerBonusSeconds, dungeonDifficultyReduction: itemId === 'dungeon-scout' ? state.dungeonDifficultyReduction + 1 : state.dungeonDifficultyReduction, systemMessage: itemId === 'boss-beacon' ? 'SYSTEM: Boss Beacon activated. Boss Dungeon unlocked.' : `SYSTEM: ${item.name} activated.` });
   },
 
   consumeDungeonAids: () => set({ dungeonTimerBonusSeconds: 0, dungeonDifficultyReduction: 0 }),
@@ -1223,104 +1213,4 @@ export const useGameStore = create<SystemState>((set, get) => ({
   clearRankUp: () => set({ showRankUp: false }),
   clearAchievement: () => set({ showAchievement: false }),
 
-  checkBossDungeonSchedule: async () => {
-    const state = get();
-    if (!state.profile || !state.settings?.onboardingComplete) return;
-
-    // Ensure the weekly boss dungeon exists and has the correct non-scheduled info
-    const weeklyBoss = state.dungeons.find(d => d.id === 'dungeon-weekly-boss');
-    if (!weeklyBoss || weeklyBoss.description.includes('weekends') || weeklyBoss.requirements?.includes('weekends')) {
-      const newBoss = {
-        id: 'dungeon-weekly-boss',
-        name: 'Weekly Boss Dungeon',
-        type: 'boss' as const,
-        description: 'An elite evaluation of your physical power. Summoned via Boss Beacon.',
-        difficulty: 5,
-        color: '#EF4444',
-        estimatedMinutes: 35,
-        xpReward: 500,
-        coinReward: 150,
-        status: weeklyBoss ? weeklyBoss.status : ('locked' as const),
-        exercises: [
-          '50 Push-ups (intensity check)',
-          '3-minute Plank Hold (core test)',
-          '100 Bodyweight Squats (leg endurance)',
-          'Reaction Drill x10 (neuromuscular check)',
-          '15-minute Shadow Boxing / Flow'
-        ],
-        requirements: 'Requires Boss Beacon key to unlock',
-        bestTime: weeklyBoss?.bestTime,
-        difficultyOffset: weeklyBoss?.difficultyOffset
-      };
-      const updatedDungeons = weeklyBoss 
-        ? state.dungeons.map(d => d.id === 'dungeon-weekly-boss' ? newBoss : d)
-        : [...state.dungeons, newBoss];
-      await saveDungeons(updatedDungeons);
-      set({ dungeons: updatedDungeons });
-    }
-  },
-
-  forceUnlockBossDungeon: async () => {
-    const state = get();
-    if (!state.profile) return;
-
-    const now = new Date();
-    const updatedProfile = {
-      ...state.profile,
-      bossDungeonStatus: 'available' as const,
-      nextBossDungeonDate: now,
-    };
-
-    const weeklyBoss = state.dungeons.find(d => d.id === 'dungeon-weekly-boss');
-    const newBoss = {
-      id: 'dungeon-weekly-boss',
-      name: 'Weekly Boss Dungeon',
-      type: 'boss' as const,
-      description: 'An elite evaluation of your physical power. Summoned via Boss Beacon.',
-      difficulty: 5,
-      color: '#EF4444',
-      estimatedMinutes: 35,
-      xpReward: 500,
-      coinReward: 150,
-      status: 'available' as const,
-      exercises: [
-        '50 Push-ups (intensity check)',
-        '3-minute Plank Hold (core test)',
-        '100 Bodyweight Squats (leg endurance)',
-        'Reaction Drill x10 (neuromuscular check)',
-        '15-minute Shadow Boxing / Flow'
-      ],
-      requirements: 'Requires Boss Beacon key to unlock',
-      bestTime: weeklyBoss?.bestTime,
-      difficultyOffset: weeklyBoss?.difficultyOffset
-    };
-
-    const updatedDungeons = state.dungeons.map(d => {
-      if (d.id === 'dungeon-weekly-boss') {
-        return newBoss;
-      }
-      return d;
-    });
-
-    if (!weeklyBoss) {
-      updatedDungeons.push(newBoss);
-    }
-
-    await Promise.all([
-      saveProfile(updatedProfile),
-      saveDungeons(updatedDungeons),
-    ]);
-
-    playBossAlert();
-
-    set({
-      profile: updatedProfile,
-      dungeons: updatedDungeons,
-      showCinematicBossNotification: true,
-    });
-  },
-
-  dismissCinematicBossNotification: () => {
-    set({ showCinematicBossNotification: false });
-  },
 }));
