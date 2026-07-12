@@ -1,0 +1,108 @@
+// ============================================================
+// SYSTEM — Main Application Component
+// ============================================================
+
+import { useEffect, useState } from 'react';
+import { useGameStore } from '@/stores/gameStore';
+import { OpeningScreen } from '@/screens/OpeningScreen';
+import { OnboardingScreen } from '@/screens/OnboardingScreen';
+import { DashboardScreen } from '@/screens/DashboardScreen';
+import { StatsScreen } from '@/screens/StatsScreen';
+import { QuestsScreen } from '@/screens/QuestsScreen';
+import { TrainingScreen } from '@/screens/TrainingScreen';
+import { DungeonPortal } from '@/screens/DungeonPortal';
+import { InventoryScreen } from '@/screens/InventoryScreen';
+import { AnalyticsScreen } from '@/screens/AnalyticsScreen';
+import { SettingsScreen } from '@/screens/SettingsScreen';
+import { EvaluationScreen } from '@/screens/EvaluationScreen';
+import { ShopScreen } from '@/screens/ShopScreen';
+import { AppLayout } from '@/components/AppLayout';
+import { SystemNotification } from '@/components/SystemNotification';
+import { LevelUpModal } from '@/components/LevelUpModal';
+import { LoadingScreen } from '@/components/LoadingScreen';
+import { BossDungeonAlert } from '@/components/BossDungeonAlert';
+import { PenaltyZoneModal } from '@/components/PenaltyZoneModal';
+import { CombatTrainingPrompt } from '@/components/CombatTrainingPrompt';
+import { CinematicBossNotification } from '@/components/CinematicBossNotification';
+import { SplashScreen } from '@/components/SplashScreen';
+
+function App() {
+  const { initialize, isLoading, currentScreen } = useGameStore();
+  const [showContent, setShowContent] = useState(false);
+  const [splashDone, setSplashDone] = useState(false);
+
+  useEffect(() => {
+    initialize().then(() => {
+      setTimeout(() => setShowContent(true), 300);
+    });
+  }, []);
+
+  // Splash screen plays first — cinematic logo animation
+  if (!splashDone) {
+    return <SplashScreen onComplete={() => setSplashDone(true)} />;
+  }
+
+  if (isLoading || !showContent) {
+    return <LoadingScreen />;
+  }
+
+  // Screen router
+  const renderScreen = () => {
+    switch (currentScreen) {
+      case 'opening':
+        return <OpeningScreen />;
+      case 'onboarding':
+        return <OnboardingScreen />;
+      case 'dashboard':
+        return <DashboardScreen />;
+      case 'stats':
+        return <StatsScreen />;
+      case 'quests':
+        return <QuestsScreen />;
+      case 'training':
+        return <TrainingScreen />;
+      case 'dungeon':
+        return <DungeonPortal />;
+      case 'inventory':
+        return <InventoryScreen />;
+      case 'shop':
+        return <ShopScreen />;
+      case 'analytics':
+        return <AnalyticsScreen />;
+      case 'settings':
+        return <SettingsScreen />;
+      case 'evaluation':
+        return <EvaluationScreen />;
+      default:
+        return <DashboardScreen />;
+    }
+  };
+
+  // Screens that don't use the app layout
+  const noLayoutScreens = ['opening', 'onboarding'];
+  const useLayout = !noLayoutScreens.includes(currentScreen);
+
+  return (
+    <div className="min-h-screen bg-[#050608] text-white selection:bg-[#4FD8FF] selection:text-black">
+      {useLayout ? (
+        <AppLayout>
+          {renderScreen()}
+        </AppLayout>
+      ) : (
+        renderScreen()
+      )}
+      <SystemNotification />
+      <LevelUpModal />
+      <BossDungeonAlert />
+      <PenaltyZoneModal />
+      <CombatTrainingPrompt />
+      <CinematicBossNotification />
+    </div>
+  );
+}
+
+export default App;
+
+if (typeof window !== 'undefined') {
+  (window as any).useGameStore = useGameStore;
+}
