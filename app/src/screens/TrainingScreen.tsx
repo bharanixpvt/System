@@ -34,7 +34,7 @@ export function TrainingScreen() {
   return (
     <div className="space-y-4 pb-6">
       <div className="flex items-center gap-2 mb-1">
-        <Dumbbell size={18} className="text-[#4FD8FF]" />
+        <Dumbbell size={18} className="text-[#CBD5E1]" />
         <h1 className="text-lg font-bold">Training Paths</h1>
       </div>
       <p className="text-sm text-white/40 mb-4">Choose a path to develop your abilities</p>
@@ -200,7 +200,7 @@ function PathDetailScreen({ path, onBack }: { path: import('@/types').TrainingPa
                         <div className="text-xs font-medium">{exercise.sets} sets</div>
                       </div>
                       <div className="text-center p-2 rounded bg-white/5">
-                        <Trophy size={14} className="mx-auto text-[#4FD8FF] mb-1" />
+                        <Trophy size={14} className="mx-auto text-[#CBD5E1] mb-1" />
                         <div className="text-xs font-medium">{exercise.reps} reps</div>
                       </div>
                       <div className="text-center p-2 rounded bg-white/5">
@@ -210,7 +210,7 @@ function PathDetailScreen({ path, onBack }: { path: import('@/types').TrainingPa
                     </div>
                     <button
                       onClick={() => handleCompleteExercise(index)}
-                      className="w-full py-2.5 bg-[#4FD8FF]/15 hover:bg-[#4FD8FF]/25 text-[#4FD8FF] rounded-lg text-xs font-medium transition-colors border border-[#4FD8FF]/30"
+                      className="w-full py-2.5 bg-[#CBD5E1]/15 hover:bg-[#CBD5E1]/25 text-[#CBD5E1] rounded-lg text-xs font-medium transition-colors border border-[#CBD5E1]/30"
                     >
                       Mark Complete
                     </button>

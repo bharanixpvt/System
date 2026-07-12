@@ -30,10 +30,10 @@ export function SystemNotification() {
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
           className="fixed top-16 left-1/2 z-[100] w-[90%] max-w-md"
         >
-          <div className="glass-panel rounded-xl p-4 border border-[#4FD8FF]/20 shadow-lg shadow-[#4FD8FF]/10">
+          <div className="glass-panel rounded-xl p-4 border border-[#CBD5E1]/20 shadow-lg shadow-[#CBD5E1]/10">
             <div className="flex items-start gap-3">
               <div className="flex-1">
-                <div className="system-text text-[#4FD8FF] mb-1">SYSTEM</div>
+                <div className="system-text text-[#CBD5E1] mb-1">SYSTEM</div>
                 <p className="text-sm text-white/90 leading-relaxed">{systemMessage}</p>
               </div>
               <button

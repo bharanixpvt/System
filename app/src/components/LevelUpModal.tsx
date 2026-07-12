@@ -41,7 +41,7 @@ export function LevelUpModal() {
                     scale: [0, 1.5, 0],
                   }}
                   transition={{ duration: 1.2, delay: i * 0.05 }}
-                  className="absolute top-1/2 left-1/2 w-2 h-2 rounded-full bg-[#4FD8FF]"
+                  className="absolute top-1/2 left-1/2 w-2 h-2 rounded-full bg-[#CBD5E1]"
                 />
               ))}
             </div>
@@ -64,7 +64,7 @@ export function LevelUpModal() {
                 transition={{ delay: 0.2, type: 'spring' }}
                 className="mb-4"
               >
-                <Star size={48} className="mx-auto text-[#4FD8FF]" />
+                <Star size={48} className="mx-auto text-[#CBD5E1]" />
               </motion.div>
             )}
 
@@ -94,7 +94,7 @@ export function LevelUpModal() {
               ) : (
                 <>
                   <p className="text-white/60 text-sm mb-1">Player reached</p>
-                  <p className="text-3xl font-bold text-[#4FD8FF]">Level {profile.totalLevel}</p>
+                  <p className="text-3xl font-bold text-[#CBD5E1]">Level {profile.totalLevel}</p>
                 </>
               )}
             </motion.div>
@@ -114,7 +114,7 @@ export function LevelUpModal() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
               onClick={handleClose}
-              className="mt-6 px-6 py-2 bg-[#4FD8FF]/20 hover:bg-[#4FD8FF]/30 text-[#4FD8FF] rounded-lg text-sm font-medium transition-colors border border-[#4FD8FF]/30"
+              className="mt-6 px-6 py-2 bg-[#CBD5E1]/20 hover:bg-[#CBD5E1]/30 text-[#CBD5E1] rounded-lg text-sm font-medium transition-colors border border-[#CBD5E1]/30"
             >
               Continue
             </motion.button>

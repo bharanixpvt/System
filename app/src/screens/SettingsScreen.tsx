@@ -11,7 +11,7 @@ import { exportAllData } from '@/db';
 import { encryptData, downloadSystemFile, readSystemFile } from '@/lib/encryption';
 
 export function SettingsScreen() {
-  const { settings, profile, updateSettings, resetSystem, importData, navigateTo } = useGameStore();
+  const { settings, profile, updateSettings, resetSystem, importData, navigateTo, toggleSystemPause } = useGameStore();
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [showImportConfirm, setShowImportConfirm] = useState(false);
   const [importData_, setImportData] = useState<Record<string, unknown> | null>(null);
@@ -52,7 +52,7 @@ export function SettingsScreen() {
   return (
     <div className="space-y-4 pb-6">
       <div className="flex items-center gap-2 mb-1">
-        <Settings size={18} className="text-[#4FD8FF]" />
+        <Settings size={18} className="text-[#CBD5E1]" />
         <h1 className="text-lg font-bold">System Settings</h1>
       </div>
 
@@ -64,8 +64,8 @@ export function SettingsScreen() {
           className="glass-card p-4"
         >
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#4FD8FF]/20 to-[#3A8DFF]/20 flex items-center justify-center border border-[#4FD8FF]/20">
-              <Shield size={20} className="text-[#4FD8FF]" />
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#CBD5E1]/20 to-[#64748B]/20 flex items-center justify-center border border-[#CBD5E1]/20">
+              <Shield size={20} className="text-[#CBD5E1]" />
             </div>
             <div>
               <p className="font-semibold">{profile.name}</p>
@@ -108,6 +108,17 @@ export function SettingsScreen() {
         />
       </SettingsSection>
 
+      {/* System Status */}
+      <SettingsSection title="System Status">
+        <ToggleSetting
+          icon={Shield}
+          label="Pause System"
+          description="Freeze streaks, quest generation, and evaluation timers during unavoidable situations."
+          enabled={settings.systemPaused ?? false}
+          onChange={() => toggleSystemPause()}
+        />
+      </SettingsSection>
+
       {/* Appearance */}
       <SettingsSection title="Appearance">
         <ToggleSetting
@@ -127,7 +138,7 @@ export function SettingsScreen() {
           className="w-full flex items-center justify-between p-3.5 rounded-lg bg-white/5 hover:bg-white/8 transition-colors text-left"
         >
           <div className="flex items-center gap-3">
-            <Download size={18} className="text-[#4FD8FF]" />
+            <Download size={18} className="text-[#CBD5E1]" />
             <div>
               <p className="text-sm font-medium">Export Save File</p>
               <p className="text-xs text-white/40">Download encrypted .system file</p>
@@ -282,7 +293,7 @@ function ToggleSetting({
   return (
     <div className={`flex items-center justify-between py-2 ${disabled ? 'opacity-50' : ''}`}>
       <div className="flex items-center gap-3">
-        <Icon size={18} className={enabled ? 'text-[#4FD8FF]' : 'text-white/30'} />
+        <Icon size={18} className={enabled ? 'text-[#CBD5E1]' : 'text-white/30'} />
         <div>
           <p className="text-sm font-medium">{label}</p>
           <p className="text-xs text-white/40">{description}</p>
@@ -291,7 +302,7 @@ function ToggleSetting({
       <button
         onClick={() => !disabled && onChange(!enabled)}
         className={`relative w-11 h-6 rounded-full transition-colors ${
-          enabled ? 'bg-[#4FD8FF]' : 'bg-white/10'
+          enabled ? 'bg-[#CBD5E1]' : 'bg-white/10'
         } ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
       >
         <div

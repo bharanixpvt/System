@@ -42,7 +42,7 @@ export function OpeningScreen() {
     <div className="min-h-screen bg-[#050608] flex flex-col items-center justify-center px-6 relative overflow-hidden">
       {/* Background grid effect */}
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{
-        backgroundImage: `linear-gradient(rgba(79, 216, 255, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(79, 216, 255, 0.3) 1px, transparent 1px)`,
+        backgroundImage: `linear-gradient(rgba(203, 213, 225, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(203, 213, 225, 0.3) 1px, transparent 1px)`,
         backgroundSize: '50px 50px',
       }} />
 
@@ -61,8 +61,8 @@ export function OpeningScreen() {
               transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
               className="mb-8"
             >
-              <div className="w-20 h-20 mx-auto rounded-full border border-[#4FD8FF]/30 flex items-center justify-center">
-                <div className="w-12 h-12 rounded-full bg-[#4FD8FF]/10 animate-pulse" />
+              <div className="w-20 h-20 mx-auto rounded-full border border-[#CBD5E1]/30 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-[#CBD5E1]/10 animate-pulse" />
               </div>
             </motion.div>
 
@@ -83,7 +83,7 @@ export function OpeningScreen() {
                   key={i}
                   animate={{ opacity: [0.2, 1, 0.2] }}
                   transition={{ duration: 1, repeat: Infinity, delay: i * 0.3 }}
-                  className="w-1.5 h-1.5 rounded-full bg-[#4FD8FF]"
+                  className="w-1.5 h-1.5 rounded-full bg-[#CBD5E1]"
                 />
               ))}
             </div>
@@ -105,8 +105,8 @@ export function OpeningScreen() {
               transition={{ type: 'spring', damping: 15 }}
               className="mb-6"
             >
-              <div className="w-16 h-16 mx-auto rounded-full bg-[#4FD8FF]/10 border border-[#4FD8FF]/40 flex items-center justify-center">
-                <Power size={28} className="text-[#4FD8FF]" />
+              <div className="w-16 h-16 mx-auto rounded-full bg-[#CBD5E1]/10 border border-[#CBD5E1]/40 flex items-center justify-center">
+                <Power size={28} className="text-[#CBD5E1]" />
               </div>
             </motion.div>
 
@@ -114,7 +114,7 @@ export function OpeningScreen() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="system-text text-[#4FD8FF] tracking-[0.15em] mb-2"
+              className="system-text text-[#CBD5E1] tracking-[0.15em] mb-2"
             >
               CANDIDATE FOUND
             </motion.p>
@@ -146,7 +146,7 @@ export function OpeningScreen() {
               className="text-lg text-white/80 mb-10 leading-relaxed"
             >
               Would you like to become
-              <span className="text-[#4FD8FF] font-semibold"> stronger</span>?
+              <span className="text-[#CBD5E1] font-semibold"> stronger</span>?
             </motion.p>
 
             <motion.div
@@ -157,7 +157,7 @@ export function OpeningScreen() {
             >
               <button
                 onClick={handleAccept}
-                className="w-full py-4 bg-gradient-to-r from-[#4FD8FF]/20 to-[#3A8DFF]/20 hover:from-[#4FD8FF]/30 hover:to-[#3A8DFF]/30 border border-[#4FD8FF]/40 text-[#4FD8FF] rounded-xl font-semibold text-sm tracking-wider transition-all duration-300 btn-press glow-border"
+                className="w-full py-4 bg-gradient-to-r from-[#CBD5E1]/20 to-[#64748B]/20 hover:from-[#CBD5E1]/30 hover:to-[#64748B]/30 border border-[#CBD5E1]/40 text-[#CBD5E1] rounded-xl font-semibold text-sm tracking-wider transition-all duration-300 btn-press glow-border"
               >
                 ACCEPT
               </button>

@@ -79,7 +79,7 @@ export function CinematicBossNotification() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1.4 }}
-              className="text-[#4FD8FF] text-sm tracking-widest font-semibold uppercase"
+              className="text-[#CBD5E1] text-sm tracking-widest font-semibold uppercase"
             >
               New Evaluation Available.
             </motion.p>

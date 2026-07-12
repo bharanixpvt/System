@@ -11,7 +11,7 @@ export function WellnessScreen() {
   return (
     <div className="space-y-4 pb-6">
       <div className="flex items-center gap-2 mb-1">
-        <Brain size={18} className="text-[#4FD8FF]" />
+        <Brain size={18} className="text-[#CBD5E1]" />
         <h1 className="text-lg font-bold">Digital Wellness</h1>
       </div>
       <p className="text-sm text-white/40 mb-4">Track and improve your mental discipline</p>
@@ -38,7 +38,7 @@ function PornRecoveryModule() {
 
   const milestones = [
     { days: 7, label: '1 Week', color: '#4ADE80' },
-    { days: 30, label: '1 Month', color: '#3A8DFF' },
+    { days: 30, label: '1 Month', color: '#64748B' },
     { days: 90, label: '3 Months', color: '#8B5CF6' },
     { days: 365, label: '1 Year', color: '#FBBF24' },
   ];
@@ -50,7 +50,7 @@ function PornRecoveryModule() {
       className="glass-card p-4"
     >
       <div className="flex items-center gap-2 mb-4">
-        <Shield size={16} className="text-[#4FD8FF]" />
+        <Shield size={16} className="text-[#CBD5E1]" />
         <h2 className="text-sm font-semibold">Digital Discipline</h2>
       </div>
 
@@ -146,7 +146,7 @@ function ScreenTimeModule() {
       className="glass-card p-4"
     >
       <div className="flex items-center gap-2 mb-4">
-        <Monitor size={16} className="text-[#4FD8FF]" />
+        <Monitor size={16} className="text-[#CBD5E1]" />
         <h2 className="text-sm font-semibold">Screen Time</h2>
       </div>
 
@@ -160,7 +160,7 @@ function ScreenTimeModule() {
         <div className="w-full h-2.5 bg-white/5 rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-all duration-500 ${
-              isOver ? 'bg-gradient-to-r from-[#FBBF24] to-[#FF5A5F]' : 'bg-gradient-to-r from-[#4ADE80] to-[#4FD8FF]'
+              isOver ? 'bg-gradient-to-r from-[#FBBF24] to-[#FF5A5F]' : 'bg-gradient-to-r from-[#4ADE80] to-[#CBD5E1]'
             }`}
             style={{ width: `${Math.min(100, percent)}%` }}
           />
@@ -179,11 +179,11 @@ function ScreenTimeModule() {
           value={screenMinutes}
           onChange={e => setScreenMinutes(e.target.value)}
           placeholder="Minutes today"
-          className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm focus:outline-none focus:border-[#4FD8FF]/50 placeholder:text-white/20"
+          className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm focus:outline-none focus:border-[#CBD5E1]/50 placeholder:text-white/20"
         />
         <button
           onClick={handleLog}
-          className="px-4 py-2 bg-[#4FD8FF]/15 text-[#4FD8FF] rounded-lg text-xs font-medium border border-[#4FD8FF]/30 transition-colors btn-press"
+          className="px-4 py-2 bg-[#CBD5E1]/15 text-[#CBD5E1] rounded-lg text-xs font-medium border border-[#CBD5E1]/30 transition-colors btn-press"
         >
           Log
         </button>
@@ -225,7 +225,7 @@ function FocusModule() {
       className="glass-card p-4"
     >
       <div className="flex items-center gap-2 mb-4">
-        <Zap size={16} className="text-[#4FD8FF]" />
+        <Zap size={16} className="text-[#CBD5E1]" />
         <h2 className="text-sm font-semibold">Focus Mode</h2>
       </div>
 
@@ -252,7 +252,7 @@ function FocusModule() {
           </div>
           <button
             onClick={handleStart}
-            className="w-full py-2.5 bg-[#4FD8FF]/15 text-[#4FD8FF] rounded-lg text-sm font-medium border border-[#4FD8FF]/30 transition-colors btn-press"
+            className="w-full py-2.5 bg-[#CBD5E1]/15 text-[#CBD5E1] rounded-lg text-sm font-medium border border-[#CBD5E1]/30 transition-colors btn-press"
           >
             Start Focus Session
           </button>

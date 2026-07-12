@@ -148,6 +148,10 @@ export async function addHistoryEntry(entry: HistoryEntry): Promise<void> {
   await db.history.put(entry);
 }
 
+export async function deleteHistoryEntry(id: string): Promise<void> {
+  await db.history.delete(id);
+}
+
 export async function getSettings(): Promise<SystemSettings | undefined> {
   const all = await db.settings.toArray();
   return all[0];

@@ -21,11 +21,11 @@ export function StatsScreen() {
   return (
     <div className="space-y-4 pb-6">
       <div className="flex items-center gap-2 mb-1">
-        <TrendingUp size={18} className="text-[#4FD8FF]" />
+        <TrendingUp size={18} className="text-[#CBD5E1]" />
         <h1 className="text-lg font-bold">Player Stats</h1>
       </div>
       <p className="text-sm text-white/40 mb-4">Tap any stat to view details</p>
-      <button onClick={() => setShowRanks(true)} className="w-full glass-card p-3 text-left flex items-center justify-between border-[#4FD8FF]/15"><span className="text-xs text-white/50">Current rank</span><span className="text-sm font-semibold text-[#4FD8FF]">{profile?.currentRank || 'E Rank'} · View ladder</span></button>
+      <button onClick={() => setShowRanks(true)} className="w-full glass-card p-3 text-left flex items-center justify-between border-[#CBD5E1]/15"><span className="text-xs text-white/50">Current rank</span><span className="text-sm font-semibold text-[#CBD5E1]">{profile?.currentRank || 'E Rank'} · View ladder</span></button>
 
       <div className="grid grid-cols-1 gap-3">
         {stats.map((stat, index) => {
@@ -53,7 +53,7 @@ export function StatsScreen() {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold">{stat.displayName}</span>
-                      <button onClick={(e) => { e.stopPropagation(); setShowRanks(true); }} className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-white/60 hover:text-[#4FD8FF] hover:bg-[#4FD8FF]/10">{stat.rank}</button>
+                      <button onClick={(e) => { e.stopPropagation(); setShowRanks(true); }} className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-white/60 hover:text-[#CBD5E1] hover:bg-[#CBD5E1]/10">{stat.rank}</button>
                     </div>
                     <div className="text-xs text-white/40 mt-0.5">{stat.description}</div>
                   </div>
@@ -99,7 +99,7 @@ export function StatsScreen() {
                     <DetailItem label="Progress" value={`${Math.round(xpPercent)}%`} />
                   </div>
                   <div className="mt-3 flex items-start gap-2 p-2.5 rounded-lg bg-white/5">
-                    <Info size={14} className="text-[#4FD8FF] mt-0.5 shrink-0" />
+                    <Info size={14} className="text-[#CBD5E1] mt-0.5 shrink-0" />
                     <p className="text-xs text-white/50 leading-relaxed">
                       Train {stat.displayName.toLowerCase()}-related exercises to increase this stat. 
                       Higher levels unlock new tiers in training paths.

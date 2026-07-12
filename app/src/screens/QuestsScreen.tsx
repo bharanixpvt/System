@@ -3,7 +3,7 @@ import { useGameStore } from '@/stores/gameStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ScrollText, Check, Clock, Zap, Shield,
-  Sun, Flag, HelpCircle, HeartPulse, Sword, Plus, Pencil, Trash2, Dumbbell
+  Sun, Flag, HelpCircle, HeartPulse, Sword, Plus, Pencil, Trash2, Dumbbell, RotateCcw
 } from 'lucide-react';
 import type { QuestType, QuestCategory } from '@/types';
 import { playQuestCompleted, playButtonPress } from '@/lib/audio';
@@ -36,15 +36,15 @@ const CATEGORY_COLORS: Record<QuestCategory, string> = {
   agility: '#FBBF24',
   endurance: '#4ADE80',
   combat: '#8B5CF6',
-  focus: '#3A8DFF',
+  focus: '#64748B',
   discipline: '#EC4899',
-  recovery: '#4FD8FF',
+  recovery: '#CBD5E1',
   mobility: '#06B6D4',
   general: '#6B7280',
 };
 
 export function QuestsScreen() {
-  const { quests, completeQuest, deleteCustomQuest, profile, inventory, useQuestUtility } = useGameStore();
+  const { quests, completeQuest, undoCompleteQuest, deleteCustomQuest, profile, inventory, useQuestUtility } = useGameStore();
   const [activeTab, setActiveTab] = useState<TabType>('daily');
   const [editing, setEditing] = useState<import('@/types').Quest | undefined>();
   const [editorOpen, setEditorOpen] = useState(false);
@@ -69,10 +69,10 @@ export function QuestsScreen() {
     <div className="space-y-4 pb-6">
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
-        <ScrollText size={18} className="text-[#4FD8FF]" />
+        <ScrollText size={18} className="text-[#CBD5E1]" />
         <h1 className="text-lg font-bold">Active Quests</h1>
         </div>
-        <button onClick={() => { setEditing(undefined); setEditorOpen(true); }} className="p-2 rounded-lg bg-[#4FD8FF]/10 text-[#4FD8FF]"><Plus size={17}/></button>
+        <button onClick={() => { setEditing(undefined); setEditorOpen(true); }} className="p-2 rounded-lg bg-[#CBD5E1]/10 text-[#CBD5E1]"><Plus size={17}/></button>
       </div>
 
       {/* Tabs */}
@@ -87,7 +87,7 @@ export function QuestsScreen() {
               onClick={() => { playButtonPress(); setActiveTab(tab.key); }}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all btn-press ${
                 isActive
-                  ? 'bg-[#4FD8FF]/15 text-[#4FD8FF] border border-[#4FD8FF]/30'
+                  ? 'bg-[#CBD5E1]/15 text-[#CBD5E1] border border-[#CBD5E1]/30'
                   : 'bg-white/5 text-white/50 border border-transparent hover:bg-white/8'
               }`}
             >
@@ -95,7 +95,7 @@ export function QuestsScreen() {
               <span>{tab.label}</span>
               {count > 0 && (
                 <span className={`ml-0.5 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                  isActive ? 'bg-[#4FD8FF]/20 text-[#4FD8FF]' : 'bg-white/10'
+                  isActive ? 'bg-[#CBD5E1]/20 text-[#CBD5E1]' : 'bg-white/10'
                 }`}>
                   {count}
                 </span>
@@ -149,7 +149,19 @@ export function QuestsScreen() {
                   <Check size={14} className="text-[#4ADE80]" />
                   <span className="text-sm line-through text-white/40">{quest.name}</span>
                 </div>
-                <span className="text-xs text-[#4ADE80]">+{quest.xpReward} XP</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-[#4ADE80]">+{quest.xpReward} XP</span>
+                  <button
+                    onClick={() => {
+                      playButtonPress();
+                      undoCompleteQuest(quest.id);
+                    }}
+                    className="flex items-center gap-1 px-2 py-1 rounded bg-[#EF4444]/10 hover:bg-[#EF4444]/20 border border-[#EF4444]/20 text-[#EF4444] text-[10px] font-medium transition-all"
+                  >
+                    <RotateCcw size={10} />
+                    <span>Undo</span>
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -200,7 +212,7 @@ function QuestCard({ quest, index, onComplete, onEdit, onDelete, onTrain, utilit
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <span className="flex items-center gap-1 text-xs text-[#4FD8FF]">
+              <span className="flex items-center gap-1 text-xs text-[#CBD5E1]">
                 <Zap size={12} /> +{quest.xpReward} XP
               </span>
               {hoursLeft > 0 && hoursLeft < 24 && (
@@ -210,7 +222,7 @@ function QuestCard({ quest, index, onComplete, onEdit, onDelete, onTrain, utilit
               )}
             </div>
 
-            <div className="flex items-center gap-2">{utility && <button onClick={() => onUseUtility(utility.id)} className="px-2 py-1.5 rounded-lg bg-[#EAB308]/10 text-[#EAB308] text-[10px]">Use {utility.name}</button>}{['strength','agility','endurance','mobility','combat'].includes(quest.category) && <button onClick={onTrain} className="p-1.5 text-[#FBBF24]"><Dumbbell size={15}/></button>}{quest.isCustom && <><button onClick={onEdit} className="p-1.5 text-white/45"><Pencil size={14}/></button><button onClick={onDelete} className="p-1.5 text-[#EF4444]"><Trash2 size={14}/></button></>}<motion.button whileTap={{ scale: .95 }} onClick={onComplete} className="px-3 py-1.5 bg-[#4FD8FF]/15 hover:bg-[#4FD8FF]/25 text-[#4FD8FF] rounded-lg text-xs font-medium border border-[#4FD8FF]/30">Complete</motion.button></div>
+            <div className="flex items-center gap-2">{utility && <button onClick={() => onUseUtility(utility.id)} className="px-2 py-1.5 rounded-lg bg-[#EAB308]/10 text-[#EAB308] text-[10px]">Use {utility.name}</button>}{['strength','agility','endurance','mobility','combat'].includes(quest.category) && <button onClick={onTrain} className="p-1.5 text-[#FBBF24]"><Dumbbell size={15}/></button>}{quest.isCustom && <><button onClick={onEdit} className="p-1.5 text-white/45"><Pencil size={14}/></button><button onClick={onDelete} className="p-1.5 text-[#EF4444]"><Trash2 size={14}/></button></>}<motion.button whileTap={{ scale: .95 }} onClick={onComplete} className="px-3 py-1.5 bg-[#CBD5E1]/15 hover:bg-[#CBD5E1]/25 text-[#CBD5E1] rounded-lg text-xs font-medium border border-[#CBD5E1]/30">Complete</motion.button></div>
           </div>
         </div>
       </div>

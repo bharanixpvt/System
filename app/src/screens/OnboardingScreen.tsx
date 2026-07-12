@@ -85,15 +85,15 @@ export function OnboardingScreen() {
       {/* Header */}
       <div className="px-6 pt-8 pb-4">
         <div className="flex items-center gap-2 mb-2">
-          <Activity size={16} className="text-[#4FD8FF]" />
-          <span className="system-text text-[#4FD8FF]">INITIAL SYSTEM SCAN</span>
+          <Activity size={16} className="text-[#CBD5E1]" />
+          <span className="system-text text-[#CBD5E1]">INITIAL SYSTEM SCAN</span>
         </div>
         <div className="flex gap-1.5">
           {[...Array(TOTAL_STEPS)].map((_, i) => (
             <div
               key={i}
               className={`flex-1 h-1 rounded-full transition-all duration-300 ${
-                i <= step ? 'bg-[#4FD8FF]' : 'bg-white/10'
+                i <= step ? 'bg-[#CBD5E1]' : 'bg-white/10'
               }`}
             />
           ))}
@@ -131,7 +131,7 @@ export function OnboardingScreen() {
           <button
             onClick={() => { playButtonPress(); setStep(step + 1); }}
             disabled={!canProceed()}
-            className="flex items-center gap-1 px-5 py-2.5 bg-[#4FD8FF]/20 hover:bg-[#4FD8FF]/30 text-[#4FD8FF] rounded-lg text-sm font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed btn-press border border-[#4FD8FF]/30"
+            className="flex items-center gap-1 px-5 py-2.5 bg-[#CBD5E1]/20 hover:bg-[#CBD5E1]/30 text-[#CBD5E1] rounded-lg text-sm font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed btn-press border border-[#CBD5E1]/30"
           >
             <span>Next</span>
             <ChevronRight size={18} />
@@ -139,7 +139,7 @@ export function OnboardingScreen() {
         ) : (
           <button
             onClick={handleSubmit}
-            className="flex items-center gap-1 px-6 py-2.5 bg-gradient-to-r from-[#4FD8FF] to-[#3A8DFF] text-[#050608] rounded-lg text-sm font-bold transition-all btn-press"
+            className="flex items-center gap-1 px-6 py-2.5 bg-gradient-to-r from-[#CBD5E1] to-[#64748B] text-[#050608] rounded-lg text-sm font-bold transition-all btn-press"
           >
             <span>Initialize</span>
             <ChevronRight size={18} />
@@ -155,7 +155,7 @@ function StepIdentity({ formData, updateField }: { formData: any; updateField: (
   return (
     <div className="space-y-5">
       <div className="text-center mb-6">
-        <User size={32} className="mx-auto text-[#4FD8FF] mb-3" />
+        <User size={32} className="mx-auto text-[#CBD5E1] mb-3" />
         <h2 className="text-xl font-bold">Player Identity</h2>
         <p className="text-sm text-white/50 mt-1">Enter your physical parameters</p>
       </div>
@@ -168,7 +168,7 @@ function StepIdentity({ formData, updateField }: { formData: any; updateField: (
           <select
             value={formData.gender}
             onChange={e => updateField('gender', e.target.value)}
-            className="w-full px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-sm focus:outline-none focus:border-[#4FD8FF]/50"
+            className="w-full px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-sm focus:outline-none focus:border-[#CBD5E1]/50"
           >
             <option value="male">Male</option>
             <option value="female">Female</option>
@@ -188,7 +188,7 @@ function StepFitness({ formData, updateField }: { formData: any; updateField: (f
   return (
     <div className="space-y-5">
       <div className="text-center mb-6">
-        <Target size={32} className="mx-auto text-[#4FD8FF] mb-3" />
+        <Target size={32} className="mx-auto text-[#CBD5E1] mb-3" />
         <h2 className="text-xl font-bold">Fitness Baseline</h2>
         <p className="text-sm text-white/50 mt-1">Assess your current capabilities</p>
       </div>
@@ -206,11 +206,11 @@ function StepFitness({ formData, updateField }: { formData: any; updateField: (f
           max="10"
           value={formData.fitnessLevel}
           onChange={e => updateField('fitnessLevel', parseInt(e.target.value))}
-          className="w-full accent-[#4FD8FF]"
+          className="w-full accent-[#CBD5E1]"
         />
         <div className="flex justify-between text-xs text-white/40 mt-1">
           <span>Beginner</span>
-          <span className="text-[#4FD8FF] font-bold">{formData.fitnessLevel}</span>
+          <span className="text-[#CBD5E1] font-bold">{formData.fitnessLevel}</span>
           <span>Elite</span>
         </div>
       </div>
@@ -220,7 +220,7 @@ function StepFitness({ formData, updateField }: { formData: any; updateField: (f
         <select
           value={formData.bandStrength}
           onChange={e => updateField('bandStrength', e.target.value)}
-          className="w-full px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-sm focus:outline-none focus:border-[#4FD8FF]/50"
+          className="w-full px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-sm focus:outline-none focus:border-[#CBD5E1]/50"
         >
           <option value="light">Light</option>
           <option value="medium">Medium</option>
@@ -235,7 +235,7 @@ function StepWellness({ formData, updateField }: { formData: any; updateField: (
   return (
     <div className="space-y-5">
       <div className="text-center mb-6">
-        <Brain size={32} className="mx-auto text-[#4FD8FF] mb-3" />
+        <Brain size={32} className="mx-auto text-[#CBD5E1] mb-3" />
         <h2 className="text-xl font-bold">Digital Wellness</h2>
         <p className="text-sm text-white/50 mt-1">Understanding your habits</p>
       </div>
@@ -248,11 +248,11 @@ function StepWellness({ formData, updateField }: { formData: any; updateField: (
           max="10"
           value={formData.sleepQuality}
           onChange={e => updateField('sleepQuality', parseInt(e.target.value))}
-          className="w-full accent-[#4FD8FF]"
+          className="w-full accent-[#CBD5E1]"
         />
         <div className="flex justify-between text-xs text-white/40 mt-1">
           <span>Poor</span>
-          <span className="text-[#4FD8FF] font-bold">{formData.sleepQuality}</span>
+          <span className="text-[#CBD5E1] font-bold">{formData.sleepQuality}</span>
           <span>Excellent</span>
         </div>
       </div>
@@ -273,7 +273,7 @@ function StepWellness({ formData, updateField }: { formData: any; updateField: (
                     : formData.goals.filter((g: string) => g !== goal);
                   updateField('goals', newGoals);
                 }}
-                className="accent-[#4FD8FF]"
+                className="accent-[#CBD5E1]"
               />
               <span className="text-sm">{goal}</span>
             </label>
@@ -287,8 +287,8 @@ function StepWellness({ formData, updateField }: { formData: any; updateField: (
 function StepConfirm({ formData }: { formData: any }) {
   return (
     <div className="text-center py-8">
-      <div className="w-20 h-20 mx-auto rounded-full bg-[#4FD8FF]/10 border border-[#4FD8FF]/30 flex items-center justify-center mb-6">
-        <Activity size={36} className="text-[#4FD8FF]" />
+      <div className="w-20 h-20 mx-auto rounded-full bg-[#CBD5E1]/10 border border-[#CBD5E1]/30 flex items-center justify-center mb-6">
+        <Activity size={36} className="text-[#CBD5E1]" />
       </div>
       <h2 className="text-xl font-bold mb-2">Scan Complete</h2>
       <p className="text-sm text-white/50 mb-8">Your Player profile is ready for initialization</p>
@@ -300,7 +300,7 @@ function StepConfirm({ formData }: { formData: any }) {
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-white/50">Fitness Level</span>
-          <span className="text-[#4FD8FF] font-medium">{formData.fitnessLevel}/10</span>
+          <span className="text-[#CBD5E1] font-medium">{formData.fitnessLevel}/10</span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-white/50">Goals</span>
@@ -327,7 +327,7 @@ function InputField({ label, value, onChange, type = 'text', placeholder }: {
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-sm focus:outline-none focus:border-[#4FD8FF]/50 placeholder:text-white/20 transition-colors"
+        className="w-full px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-sm focus:outline-none focus:border-[#CBD5E1]/50 placeholder:text-white/20 transition-colors"
       />
     </div>
   );

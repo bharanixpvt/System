@@ -109,7 +109,7 @@ export function EvaluationScreen() {
           </p>
           <button
             onClick={() => navigateTo('dashboard')}
-            className="px-6 py-2.5 bg-[#4FD8FF]/20 text-[#4FD8FF] rounded-lg text-sm font-medium border border-[#4FD8FF]/30"
+            className="px-6 py-2.5 bg-[#CBD5E1]/20 text-[#CBD5E1] rounded-lg text-sm font-medium border border-[#CBD5E1]/30"
           >
             Return to Dashboard
           </button>
@@ -135,7 +135,7 @@ export function EvaluationScreen() {
           <p className="text-3xl font-bold text-[#FBBF24] mb-6">{daysLeft} days</p>
           <button
             onClick={() => navigateTo('dashboard')}
-            className="px-6 py-2.5 bg-[#4FD8FF]/20 text-[#4FD8FF] rounded-lg text-sm font-medium border border-[#4FD8FF]/30"
+            className="px-6 py-2.5 bg-[#CBD5E1]/20 text-[#CBD5E1] rounded-lg text-sm font-medium border border-[#CBD5E1]/30"
           >
             Continue Training
           </button>
@@ -147,11 +147,11 @@ export function EvaluationScreen() {
   return (
     <div className="space-y-4 pb-6">
       <div className="flex items-center gap-2 mb-1">
-        <ClipboardCheck size={18} className="text-[#4FD8FF]" />
+        <ClipboardCheck size={18} className="text-[#CBD5E1]" />
         <h1 className="text-lg font-bold">System Evaluation</h1>
       </div>
 
-      <div className="glass-card p-4 border-[#4FD8FF]/20">
+      <div className="glass-card p-4 border-[#CBD5E1]/20">
         <div className="flex items-start gap-3">
           <AlertTriangle size={18} className="text-[#FBBF24] shrink-0 mt-0.5" />
           <div>
@@ -175,7 +175,7 @@ export function EvaluationScreen() {
             className="glass-card p-4"
           >
             <div className="flex items-center gap-2 mb-4">
-              <Icon size={16} className="text-[#4FD8FF]" />
+              <Icon size={16} className="text-[#CBD5E1]" />
               <h2 className="text-sm font-semibold">{test.category}</h2>
             </div>
             <div className="space-y-3">
@@ -188,7 +188,7 @@ export function EvaluationScreen() {
                       value={scores[field.key] || ''}
                       onChange={e => updateScore(field.key, e.target.value)}
                       placeholder={field.placeholder}
-                      className="flex-1 px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-sm focus:outline-none focus:border-[#4FD8FF]/50 placeholder:text-white/20"
+                      className="flex-1 px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-sm focus:outline-none focus:border-[#CBD5E1]/50 placeholder:text-white/20"
                     />
                     <span className="flex items-center text-xs text-white/40 px-2">{field.unit}</span>
                   </div>
@@ -204,7 +204,7 @@ export function EvaluationScreen() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
         onClick={handleSubmit}
-        className="w-full py-3.5 bg-gradient-to-r from-[#4FD8FF] to-[#3A8DFF] text-[#050608] rounded-xl font-bold text-sm tracking-wider transition-all btn-press"
+        className="w-full py-3.5 bg-gradient-to-r from-[#CBD5E1] to-[#64748B] text-[#050608] rounded-xl font-bold text-sm tracking-wider transition-all btn-press"
       >
         Submit Evaluation
       </motion.button>

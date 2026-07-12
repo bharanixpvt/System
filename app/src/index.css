@@ -12,20 +12,24 @@
     --card-foreground: 0 0% 100%;
     --popover: 220 20% 5%;
     --popover-foreground: 0 0% 100%;
-    --primary: 193 100% 65%;
+    --primary: 215 25% 72%;
     --primary-foreground: 228 33% 2%;
     --secondary: 220 15% 10%;
     --secondary-foreground: 0 0% 100%;
     --muted: 220 15% 10%;
     --muted-foreground: 0 0% 65%;
-    --accent: 193 100% 65%;
+    --accent: 215 25% 72%;
     --accent-foreground: 228 33% 2%;
     --destructive: 354 100% 68%;
     --destructive-foreground: 0 0% 100%;
     --border: 0 0% 100% / 0.08;
     --input: 220 15% 10%;
-    --ring: 193 100% 65%;
+    --ring: 215 25% 72%;
     --radius: 0.75rem;
+  }
+
+  html, body {
+    overscroll-behavior-y: contain;
   }
 
   body {
@@ -59,9 +63,7 @@
 @layer components {
   /* Glass morphism card */
   .glass-card {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: rgba(18, 22, 28, 0.65);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 16px;
   }
@@ -71,8 +73,8 @@
   }
   .glass-card-hover:hover {
     background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(79, 216, 255, 0.2);
-    box-shadow: 0 0 20px rgba(79, 216, 255, 0.1);
+    border-color: rgba(203, 213, 225, 0.2);
+    box-shadow: 0 0 20px rgba(203, 213, 225, 0.1);
     transform: translateY(-2px);
   }
 
@@ -91,13 +93,13 @@
 
   /* Cyan glow border */
   .glow-border {
-    border: 1px solid rgba(79, 216, 255, 0.3);
-    box-shadow: 0 0 15px rgba(79, 216, 255, 0.1), inset 0 0 15px rgba(79, 216, 255, 0.05);
+    border: 1px solid rgba(203, 213, 225, 0.3);
+    box-shadow: 0 0 15px rgba(203, 213, 225, 0.1), inset 0 0 15px rgba(203, 213, 225, 0.05);
   }
 
   /* Accent text gradient */
   .text-gradient-cyan {
-    background: linear-gradient(135deg, #4FD8FF, #3A8DFF);
+    background: linear-gradient(135deg, #CBD5E1, #64748B);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -112,10 +114,10 @@
   }
   .xp-bar-fill {
     height: 100%;
-    background: linear-gradient(90deg, #4FD8FF, #3A8DFF);
+    background: linear-gradient(90deg, #CBD5E1, #64748B);
     border-radius: 3px;
     transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 0 8px rgba(79, 216, 255, 0.5);
+    box-shadow: 0 0 8px rgba(203, 213, 225, 0.5);
   }
 
   /* Stat bar */
@@ -189,7 +191,7 @@
     position: absolute;
     inset: -1px;
     border-radius: inherit;
-    background: linear-gradient(135deg, rgba(79, 216, 255, 0.3), transparent, rgba(58, 141, 255, 0.3));
+    background: linear-gradient(135deg, rgba(203, 213, 225, 0.3), transparent, rgba(100, 116, 139, 0.3));
     z-index: -1;
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -200,7 +202,7 @@
 
   /* Navigation active */
   .nav-active {
-    color: #4FD8FF;
+    color: #CBD5E1;
     position: relative;
   }
   .nav-active::after {
@@ -211,9 +213,9 @@
     transform: translateX(-50%);
     width: 20px;
     height: 2px;
-    background: #4FD8FF;
+    background: #CBD5E1;
     border-radius: 1px;
-    box-shadow: 0 0 6px rgba(79, 216, 255, 0.5);
+    box-shadow: 0 0 6px rgba(203, 213, 225, 0.5);
   }
 
   /* Tier badge colors */
@@ -228,10 +230,10 @@
 
 @layer utilities {
   .text-shadow-glow {
-    text-shadow: 0 0 10px rgba(79, 216, 255, 0.5);
+    text-shadow: 0 0 10px rgba(203, 213, 225, 0.5);
   }
   .text-shadow-glow-strong {
-    text-shadow: 0 0 20px rgba(79, 216, 255, 0.7), 0 0 40px rgba(79, 216, 255, 0.3);
+    text-shadow: 0 0 20px rgba(203, 213, 225, 0.7), 0 0 40px rgba(203, 213, 225, 0.3);
   }
 }
 
@@ -290,5 +292,5 @@
   outline: none;
   transition: border-color .18s ease, box-shadow .18s ease;
 }
-.ios-select:focus { border-color: rgba(79,216,255,.75); box-shadow: 0 0 0 4px rgba(79,216,255,.14), inset 0 1px 0 rgba(255,255,255,.09); }
+.ios-select:focus { border-color: rgba(203, 213, 225,.75); box-shadow: 0 0 0 4px rgba(203, 213, 225,.14), inset 0 1px 0 rgba(255,255,255,.09); }
 .ios-select option { background: #14161a; color: #fff; }

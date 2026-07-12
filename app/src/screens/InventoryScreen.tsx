@@ -32,7 +32,7 @@ export function InventoryScreen() {
   return (
     <div className="space-y-4 pb-6">
       <div className="flex items-center gap-2 mb-1">
-        <div className="flex items-center gap-2"><Backpack size={18} className="text-[#4FD8FF]" /><h1 className="text-lg font-bold">Inventory</h1></div>
+        <div className="flex items-center gap-2"><Backpack size={18} className="text-[#CBD5E1]" /><h1 className="text-lg font-bold">Inventory</h1></div>
         <button onClick={() => navigateTo('shop')} className="flex items-center gap-1.5 rounded-xl bg-[#EAB308]/10 border border-[#EAB308]/20 px-3 py-2 text-xs font-medium text-[#EAB308]"><ShoppingBag size={14}/> Shop</button>
       </div>
 
@@ -47,7 +47,7 @@ export function InventoryScreen() {
               onClick={() => { playButtonPress(); setActiveTab(tab.key); }}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
                 isActive
-                  ? 'bg-[#4FD8FF]/15 text-[#4FD8FF] border border-[#4FD8FF]/30'
+                  ? 'bg-[#CBD5E1]/15 text-[#CBD5E1] border border-[#CBD5E1]/30'
                   : 'bg-white/5 text-white/50 border border-transparent hover:bg-white/8'
               }`}
             >
@@ -70,7 +70,7 @@ export function InventoryScreen() {
               onClick={() => title.unlocked && equipTitle(title.id)}
               className={`glass-card p-3.5 flex items-center justify-between transition-all ${
                 title.unlocked ? 'cursor-pointer hover:border-white/15' : 'opacity-40'
-              } ${title.equipped ? 'border-[#4FD8FF]/30' : ''}`}
+              } ${title.equipped ? 'border-[#CBD5E1]/30' : ''}`}
             >
               <div className="flex items-center gap-3">
                 <div
@@ -91,12 +91,12 @@ export function InventoryScreen() {
                   </div>
                   <p className="text-xs text-white/40">{title.unlocked ? title.description : '???'}</p>
                   {title.unlocked && (
-                    <p className="text-[10px] text-[#4FD8FF]/60 mt-0.5">{title.bonus}</p>
+                    <p className="text-[10px] text-[#CBD5E1]/60 mt-0.5">{title.bonus}</p>
                   )}
                 </div>
               </div>
               {title.equipped && (
-                <span className="flex items-center gap-1 text-[10px] text-[#4FD8FF]">
+                <span className="flex items-center gap-1 text-[10px] text-[#CBD5E1]">
                   <Check size={12} /> Equipped
                 </span>
               )}
@@ -111,7 +111,7 @@ export function InventoryScreen() {
             <div className="glass-card p-8 text-center">
               <Backpack size={32} className="mx-auto text-white/20 mb-3" />
               <p className="text-sm text-white/40">No items in inventory. Purchase utility aids or beacon keys in the System Shop.</p>
-              <button onClick={() => navigateTo('shop')} className="mt-3 text-xs text-[#4FD8FF]">Open Shop</button>
+              <button onClick={() => navigateTo('shop')} className="mt-3 text-xs text-[#CBD5E1]">Open Shop</button>
             </div>
           ) : (
             inventory.map((item, i) => (
@@ -122,21 +122,21 @@ export function InventoryScreen() {
                 transition={{ delay: i * 0.05 }}
                 onClick={() => item.type === 'utility' ? activateUtility(item.id) : equipItem(item.id)}
                 className={`glass-card p-3.5 flex items-center justify-between cursor-pointer hover:border-white/15 transition-all ${
-                  item.equipped ? 'border-[#4FD8FF]/30' : ''
+                  item.equipped ? 'border-[#CBD5E1]/30' : ''
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
-                    <Sparkles size={18} className="text-[#4FD8FF]" />
+                    <Sparkles size={18} className="text-[#CBD5E1]" />
                   </div>
                   <div>
                     <p className="text-sm font-medium">{item.name}</p>
                     <p className="text-xs text-white/40">{item.description}</p>
-                    {item.type === 'utility' && <p className="text-[10px] text-[#4FD8FF]/70 mt-1">Tap to activate · {item.quantity || 0} available</p>}
+                    {item.type === 'utility' && <p className="text-[10px] text-[#CBD5E1]/70 mt-1">Tap to activate · {item.quantity || 0} available</p>}
                   </div>
                 </div>
                 {item.equipped && (
-                  <span className="text-[10px] text-[#4FD8FF]">Equipped</span>
+                  <span className="text-[10px] text-[#CBD5E1]">Equipped</span>
                 )}
               </motion.div>
             ))
@@ -154,7 +154,7 @@ export function InventoryScreen() {
               transition={{ delay: i * 0.03, type: 'spring', stiffness: 200, damping: 20 }}
               className={`glass-card p-3.5 transition-all duration-300 ${
                 ach.unlocked
-                  ? 'hover:border-[#4FD8FF]/20 hover:shadow-lg hover:shadow-[#4FD8FF]/5'
+                  ? 'hover:border-[#CBD5E1]/20 hover:shadow-lg hover:shadow-[#CBD5E1]/5'
                   : 'opacity-55'
               }`}
             >

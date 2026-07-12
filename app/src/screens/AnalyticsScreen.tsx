@@ -45,20 +45,20 @@ export function AnalyticsScreen() {
   const categoryData = Object.entries(questCategories).map(([cat, count]) => ({
     category: cat.charAt(0).toUpperCase() + cat.slice(1),
     count,
-    color: STAT_CONFIG[cat as keyof typeof STAT_CONFIG]?.color || '#4FD8FF',
+    color: STAT_CONFIG[cat as keyof typeof STAT_CONFIG]?.color || '#CBD5E1',
   }));
 
   return (
     <div className="space-y-5 pb-6">
       <div className="flex items-center gap-2 mb-1">
-        <BarChart3 size={18} className="text-[#4FD8FF]" />
+        <BarChart3 size={18} className="text-[#CBD5E1]" />
         <h1 className="text-lg font-bold">System Analytics</h1>
       </div>
 
       {/* Key Metrics */}
       <div className="grid grid-cols-2 gap-3">
-        <MetricCard icon={TrendingUp} label="Total XP" value={profile.totalXP.toLocaleString()} color="#4FD8FF" />
-        <MetricCard icon={Activity} label="Level" value={`${profile.totalLevel}`} color="#3A8DFF" />
+        <MetricCard icon={TrendingUp} label="Total XP" value={profile.totalXP.toLocaleString()} color="#CBD5E1" />
+        <MetricCard icon={Activity} label="Level" value={`${profile.totalLevel}`} color="#64748B" />
         <MetricCard icon={Flame} label="Max Streak" value={`${profile.maxStreak} days`} color="#FBBF24" />
         <MetricCard icon={Target} label="Quests Done" value={`${quests.filter(q => q.status === 'completed').length}`} color="#4ADE80" />
       </div>
@@ -87,8 +87,8 @@ export function AnalyticsScreen() {
               <Radar
                 name="Stats"
                 dataKey="level"
-                stroke="#4FD8FF"
-                fill="#4FD8FF"
+                stroke="#CBD5E1"
+                fill="#CBD5E1"
                 fillOpacity={0.15}
                 strokeWidth={2}
               />
@@ -127,7 +127,7 @@ export function AnalyticsScreen() {
                 }}
                 labelStyle={{ color: 'rgba(255,255,255,0.6)' }}
               />
-              <Bar dataKey="xp" fill="#4FD8FF" radius={[4, 4, 0, 0]} fillOpacity={0.6} />
+              <Bar dataKey="xp" fill="#CBD5E1" radius={[4, 4, 0, 0]} fillOpacity={0.6} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -193,7 +193,7 @@ export function AnalyticsScreen() {
                   <Calendar size={14} className="text-white/30" />
                   <span className="text-sm">{w.pathDisplayName}</span>
                 </div>
-                <span className="text-xs text-[#4FD8FF]">+{w.totalXP} XP</span>
+                <span className="text-xs text-[#CBD5E1]">+{w.totalXP} XP</span>
               </div>
             ))}
           </div>

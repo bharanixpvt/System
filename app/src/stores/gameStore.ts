@@ -38,6 +38,7 @@ import {
   addXP,
   addStatXP,
   getRankForLevel,
+  calculateLevelFromTotalXP,
   getNextRank,
   checkStreak,
 } from '@/engine/gameEngine';
@@ -58,6 +59,7 @@ import {
   saveInventoryItem,
   getHistory,
   addHistoryEntry,
+  deleteHistoryEntry,
   getSettings,
   saveSettings,
   getDungeons,
@@ -69,7 +71,6 @@ import {
   resetAllData,
 } from '@/db';
 import { playQuestCompleted, playLevelUp, playAchievement, playRankUp, playPenalty, playNotification, playBossAlert } from '@/lib/audio';
-import { evaluateSchedule, getNextScheduleOnComplete, SCHEDULE_CONFIGS } from '@/engine/scheduler';
 
 // ============================================================
 // Store State Interface
@@ -115,6 +116,7 @@ interface SystemState {
   
   // Quest Actions
   completeQuest: (questId: string) => Promise<void>;
+  undoCompleteQuest: (questId: string) => Promise<void>;
   failQuest: (questId: string) => Promise<void>;
   generateDailyQuests: () => Promise<void>;
   saveCustomQuest: (quest: Partial<Quest> & { name: string; description: string; category: QuestCategory }) => Promise<void>;
@@ -162,6 +164,7 @@ interface SystemState {
   
   // Settings
   updateSettings: (settings: Partial<SystemSettings>) => Promise<void>;
+  toggleSystemPause: () => Promise<void>;
   
   // Export/Import
   exportData: () => Promise<string>;
@@ -211,6 +214,7 @@ const defaultSettings: SystemSettings = {
   gymEquipmentEnabled: false,
   onboardingComplete: false,
   bossDungeonPenaltyEnabled: true,
+  systemPaused: false,
 };
 
 // ============================================================
@@ -278,27 +282,31 @@ export const useGameStore = create<SystemState>((set, get) => ({
           getTrainingPaths(),
         ]);
       
-      // Check streak
-      const streakCheck = checkStreak(profile.lastLoginDate);
-      if (streakCheck.reset) {
-        profile.streak = 0;
+      // Check streak (skip if paused)
+      if (!settings?.systemPaused) {
+        const streakCheck = checkStreak(profile.lastLoginDate);
+        if (streakCheck.reset) {
+          profile.streak = 0;
+          await saveProfile(profile);
+        }
+      }
+      
+      // Update last login (skip if paused)
+      if (!settings?.systemPaused) {
+        profile.lastLoginDate = new Date();
+        // Migration for existing players: begin the optional combat check-in one week from now.
+        if (!profile.combatTrainingStatus) {
+          profile.combatTrainingStatus = 'locked';
+          profile.combatPromptAfter = new Date(Date.now() + 7 * 86400000);
+        }
         await saveProfile(profile);
       }
       
-      // Update last login
-      profile.lastLoginDate = new Date();
-      // Migration for existing players: begin the optional combat check-in one week from now.
-      if (!profile.combatTrainingStatus) {
-        profile.combatTrainingStatus = 'locked';
-        profile.combatPromptAfter = new Date(Date.now() + 7 * 86400000);
-      }
-      await saveProfile(profile);
-      
-      // Generate daily quests if needed
+      // Generate daily quests if needed (skip if paused)
       const todayStr = new Date().toISOString().split('T')[0];
       const hasTodayQuests = quests.some(q => q.type === 'daily' && q.id.includes(todayStr));
       let updatedQuests = quests;
-      if (!hasTodayQuests) {
+      if (!hasTodayQuests && !settings?.systemPaused) {
         const dailyQuests = generateDailyQuests(profile);
         const sideQuests = generateSideQuests(profile);
         updatedQuests = [...quests.filter(q => q.type !== 'daily' || q.status === 'active'), ...dailyQuests, ...sideQuests];
@@ -320,11 +328,13 @@ export const useGameStore = create<SystemState>((set, get) => ({
         currentScreen: 'dashboard',
         isLoading: false,
         isInitialized: true,
-        penaltyZone: updatedQuests.filter(q => q.status === 'failed').length >= 3,
+        penaltyZone: settings?.systemPaused ? false : updatedQuests.filter(q => q.status === 'failed').length >= 3,
       });
 
-      // Evaluate boss dungeon schedule
-      await get().checkBossDungeonSchedule();
+      // Evaluate boss dungeon schedule (skip if paused)
+      if (!settings?.systemPaused) {
+        await get().checkBossDungeonSchedule();
+      }
       
     } catch (error) {
       console.error('Initialization error:', error);
@@ -533,6 +543,61 @@ export const useGameStore = create<SystemState>((set, get) => ({
     await get().checkAchievements();
   },
   
+  undoCompleteQuest: async (questId: string) => {
+    const state = get();
+    if (!state.profile) return;
+    
+    const quest = state.quests.find(q => q.id === questId);
+    if (!quest || quest.status !== 'completed') return;
+    
+    const questPrefix = `Quest Completed: ${quest.name}`;
+    const historyEntry = state.history.find(h => h.type === 'quest_complete' && h.action.startsWith(questPrefix));
+    
+    const xpToDeduct = historyEntry ? historyEntry.xpChange : quest.xpReward;
+    const coinsToDeduct = historyEntry ? historyEntry.coinChange : quest.coinReward;
+    
+    quest.status = 'active';
+    quest.completedAt = undefined;
+    
+    const updatedProfile = { ...state.profile };
+    updatedProfile.totalXP = Math.max(0, updatedProfile.totalXP - xpToDeduct);
+    updatedProfile.coins = Math.max(0, updatedProfile.coins - coinsToDeduct);
+    updatedProfile.streak = Math.max(0, updatedProfile.streak - 1);
+    
+    const oldLevel = updatedProfile.totalLevel;
+    const { level, xpToNext } = calculateLevelFromTotalXP(updatedProfile.totalXP);
+    updatedProfile.totalLevel = level;
+    updatedProfile.xpToNextLevel = xpToNext;
+    
+    if (level < oldLevel) {
+      const levelsLost = oldLevel - level;
+      updatedProfile.attributePoints = Math.max(0, updatedProfile.attributePoints - levelsLost * 2);
+      updatedProfile.skillPoints = Math.max(0, updatedProfile.skillPoints - levelsLost);
+    }
+    
+    updatedProfile.currentRank = getRankForLevel(updatedProfile.totalLevel);
+    
+    const dbPromises: Promise<any>[] = [
+      saveProfile(updatedProfile),
+      saveQuests(state.quests.map(q => q.id === questId ? quest : q))
+    ];
+    
+    let updatedHistory = state.history;
+    if (historyEntry) {
+      dbPromises.push(deleteHistoryEntry(historyEntry.id));
+      updatedHistory = state.history.filter(h => h.id !== historyEntry.id);
+    }
+    
+    await Promise.all(dbPromises);
+    
+    set({
+      profile: updatedProfile,
+      quests: state.quests.map(q => q.id === questId ? quest : q),
+      history: updatedHistory,
+      systemMessage: `SYSTEM: Reverted completion of "${quest.name}".`,
+    });
+  },
+  
   failQuest: async (questId: string) => {
     const state = get();
     const quest = state.quests.find(q => q.id === questId);
@@ -716,13 +781,9 @@ export const useGameStore = create<SystemState>((set, get) => ({
     xpResult.profile.coins += dungeon.coinReward;
     
     if (dungeonId === 'dungeon-weekly-boss') {
-      const completionSchedule = getNextScheduleOnComplete(
-        SCHEDULE_CONFIGS['weekly-boss-dungeon'],
-        new Date()
-      );
-      xpResult.profile.bossDungeonStatus = completionSchedule.status;
-      xpResult.profile.lastBossDungeonDate = completionSchedule.lastOccurrence;
-      xpResult.profile.nextBossDungeonDate = completionSchedule.nextOccurrence;
+      xpResult.profile.bossDungeonStatus = 'locked' as const;
+      xpResult.profile.lastBossDungeonDate = new Date();
+      xpResult.profile.nextBossDungeonDate = undefined;
     }
     
     const historyEntry: HistoryEntry = {
@@ -1057,6 +1118,46 @@ export const useGameStore = create<SystemState>((set, get) => ({
     await saveSettings(updated);
     set({ settings: updated });
   },
+
+  toggleSystemPause: async () => {
+    const state = get();
+    if (!state.settings || !state.profile) return;
+    
+    const isPausing = !state.settings.systemPaused;
+    const updatedSettings = { ...state.settings, systemPaused: isPausing };
+    const updatedProfile = { ...state.profile };
+    
+    let updatedQuests = state.quests;
+    
+    if (!isPausing) {
+      // Resuming
+      updatedProfile.lastLoginDate = new Date();
+      await saveProfile(updatedProfile);
+      
+      // Ensure daily quests are set up for the current day without penalty carryover
+      const todayStr = new Date().toISOString().split('T')[0];
+      const hasTodayQuests = state.quests.some(q => q.type === 'daily' && q.id.includes(todayStr));
+      if (!hasTodayQuests) {
+        const dailyQuests = generateDailyQuests(updatedProfile);
+        const sideQuests = generateSideQuests(updatedProfile);
+        // Clear failed daily quests from before pause so the user resumes with a clean slate
+        updatedQuests = [...state.quests.filter(q => q.type !== 'daily' || q.status === 'completed'), ...dailyQuests, ...sideQuests];
+        await saveQuests(updatedQuests);
+      }
+    }
+    
+    await Promise.all([
+      saveSettings(updatedSettings),
+      saveProfile(updatedProfile),
+    ]);
+    
+    set({
+      settings: updatedSettings,
+      profile: updatedProfile,
+      quests: updatedQuests,
+      penaltyZone: isPausing ? false : updatedQuests.filter(q => q.status === 'failed').length >= 3,
+    });
+  },
   
   // ============================================================
   // Export / Import
@@ -1126,65 +1227,20 @@ export const useGameStore = create<SystemState>((set, get) => ({
     const state = get();
     if (!state.profile || !state.settings?.onboardingComplete) return;
 
-    const now = new Date();
-    
-    // 1. If not initialized, initialize schedule
-    if (!state.profile.nextBossDungeonDate) {
-      const updatedProfile = {
-        ...state.profile,
-        nextBossDungeonDate: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000),
-        bossDungeonStatus: 'locked' as const,
-        lastBossDungeonDate: undefined,
-      };
-      
-      const hasBossDungeon = state.dungeons.some(d => d.id === 'dungeon-weekly-boss');
-      let updatedDungeons = state.dungeons;
-      if (!hasBossDungeon) {
-        // Add the weekly boss dungeon if missing
-        const newBoss = {
-          id: 'dungeon-weekly-boss',
-          name: 'Weekly Boss Dungeon',
-          type: 'boss' as const,
-          description: 'An elite evaluation of your physical power. Appears only on weekends.',
-          difficulty: 5,
-          color: '#EF4444',
-          estimatedMinutes: 35,
-          xpReward: 500,
-          coinReward: 150,
-          status: 'locked' as const,
-          exercises: [
-            '50 Push-ups (intensity check)',
-            '3-minute Plank Hold (core test)',
-            '100 Bodyweight Squats (leg endurance)',
-            'Reaction Drill x10 (neuromuscular check)',
-            '15-minute Shadow Boxing / Flow'
-          ],
-          requirements: 'Unlocks on weekends when scheduled'
-        };
-        updatedDungeons = [...state.dungeons, newBoss];
-        await saveDungeons(updatedDungeons);
-      }
-
-      await saveProfile(updatedProfile);
-      set({ profile: updatedProfile, dungeons: updatedDungeons });
-      return;
-    }
-
-    // Ensure the weekly boss dungeon exists in the local state/DB
-    const hasBossDungeon = state.dungeons.some(d => d.id === 'dungeon-weekly-boss');
-    let currentDungeons = state.dungeons;
-    if (!hasBossDungeon) {
+    // Ensure the weekly boss dungeon exists and has the correct non-scheduled info
+    const weeklyBoss = state.dungeons.find(d => d.id === 'dungeon-weekly-boss');
+    if (!weeklyBoss || weeklyBoss.description.includes('weekends') || weeklyBoss.requirements?.includes('weekends')) {
       const newBoss = {
         id: 'dungeon-weekly-boss',
         name: 'Weekly Boss Dungeon',
         type: 'boss' as const,
-        description: 'An elite evaluation of your physical power. Appears only on weekends.',
+        description: 'An elite evaluation of your physical power. Summoned via Boss Beacon.',
         difficulty: 5,
         color: '#EF4444',
         estimatedMinutes: 35,
         xpReward: 500,
         coinReward: 150,
-        status: state.profile.bossDungeonStatus || 'locked',
+        status: weeklyBoss ? weeklyBoss.status : ('locked' as const),
         exercises: [
           '50 Push-ups (intensity check)',
           '3-minute Plank Hold (core test)',
@@ -1192,75 +1248,15 @@ export const useGameStore = create<SystemState>((set, get) => ({
           'Reaction Drill x10 (neuromuscular check)',
           '15-minute Shadow Boxing / Flow'
         ],
-        requirements: 'Unlocks on weekends when scheduled'
+        requirements: 'Requires Boss Beacon key to unlock',
+        bestTime: weeklyBoss?.bestTime,
+        difficultyOffset: weeklyBoss?.difficultyOffset
       };
-      currentDungeons = [...state.dungeons, newBoss];
-      await saveDungeons(currentDungeons);
-    }
-
-    // 2. Evaluate schedule
-    const currentScheduleInput = {
-      lastOccurrence: state.profile.lastBossDungeonDate ? new Date(state.profile.lastBossDungeonDate) : undefined,
-      nextOccurrence: new Date(state.profile.nextBossDungeonDate),
-      status: state.profile.bossDungeonStatus || 'locked',
-    };
-
-    const evaluation = evaluateSchedule(
-      SCHEDULE_CONFIGS['weekly-boss-dungeon'],
-      currentScheduleInput,
-      now
-    );
-
-    if (evaluation.didUnlock || evaluation.didExpire) {
-      const updatedProfile = { ...state.profile };
-      updatedProfile.bossDungeonStatus = evaluation.status;
-      updatedProfile.lastBossDungeonDate = evaluation.lastOccurrence;
-      updatedProfile.nextBossDungeonDate = evaluation.nextOccurrence;
-
-      const updatedDungeons = currentDungeons.map(d => {
-        if (d.id === 'dungeon-weekly-boss') {
-          return { ...d, status: evaluation.status };
-        }
-        return d;
-      });
-
-      // Apply penalty if expired
-      if (evaluation.didExpire) {
-        let penaltyXP = 0;
-        if (state.settings?.bossDungeonPenaltyEnabled) {
-          updatedProfile.streak = 0;
-          penaltyXP = Math.floor(500 * 0.5); // 50% of the 500 XP reward
-          updatedProfile.totalXP = Math.max(0, updatedProfile.totalXP - penaltyXP);
-          playPenalty();
-          set({ penaltyZone: true });
-        }
-        
-        await addHistoryEntry({
-          id: `hist-boss-expire-${Date.now()}`,
-          date: now,
-          action: 'Weekly Boss Dungeon Expired',
-          xpChange: -penaltyXP,
-          coinChange: 0,
-          statChanges: {},
-          type: 'dungeon_expire',
-          details: 'Evaluation window collapsed. Penalty applied.',
-        });
-      }
-
-      if (evaluation.didUnlock) {
-        playBossAlert();
-      }
-
-      await Promise.all([
-        saveProfile(updatedProfile),
-        saveDungeons(updatedDungeons),
-      ]);
-
-      set({
-        profile: updatedProfile,
-        dungeons: updatedDungeons,
-        showCinematicBossNotification: evaluation.didUnlock ? true : state.showCinematicBossNotification,
-      });
+      const updatedDungeons = weeklyBoss 
+        ? state.dungeons.map(d => d.id === 'dungeon-weekly-boss' ? newBoss : d)
+        : [...state.dungeons, newBoss];
+      await saveDungeons(updatedDungeons);
+      set({ dungeons: updatedDungeons });
     }
   },
 
@@ -1272,42 +1268,43 @@ export const useGameStore = create<SystemState>((set, get) => ({
     const updatedProfile = {
       ...state.profile,
       bossDungeonStatus: 'available' as const,
-      nextBossDungeonDate: now, // the 24 hours window starts now
+      nextBossDungeonDate: now,
     };
 
-    // Ensure weekly boss exists
-    const hasBossDungeon = state.dungeons.some(d => d.id === 'dungeon-weekly-boss');
-    let currentDungeons = state.dungeons;
-    if (!hasBossDungeon) {
-      const newBoss = {
-        id: 'dungeon-weekly-boss',
-        name: 'Weekly Boss Dungeon',
-        type: 'boss' as const,
-        description: 'An elite evaluation of your physical power. Appears only on weekends.',
-        difficulty: 5,
-        color: '#EF4444',
-        estimatedMinutes: 35,
-        xpReward: 500,
-        coinReward: 150,
-        status: 'available' as const,
-        exercises: [
-          '50 Push-ups (intensity check)',
-          '3-minute Plank Hold (core test)',
-          '100 Bodyweight Squats (leg endurance)',
-          'Reaction Drill x10 (neuromuscular check)',
-          '15-minute Shadow Boxing / Flow'
-        ],
-        requirements: 'Unlocks on weekends when scheduled'
-      };
-      currentDungeons = [...state.dungeons, newBoss];
-    }
+    const weeklyBoss = state.dungeons.find(d => d.id === 'dungeon-weekly-boss');
+    const newBoss = {
+      id: 'dungeon-weekly-boss',
+      name: 'Weekly Boss Dungeon',
+      type: 'boss' as const,
+      description: 'An elite evaluation of your physical power. Summoned via Boss Beacon.',
+      difficulty: 5,
+      color: '#EF4444',
+      estimatedMinutes: 35,
+      xpReward: 500,
+      coinReward: 150,
+      status: 'available' as const,
+      exercises: [
+        '50 Push-ups (intensity check)',
+        '3-minute Plank Hold (core test)',
+        '100 Bodyweight Squats (leg endurance)',
+        'Reaction Drill x10 (neuromuscular check)',
+        '15-minute Shadow Boxing / Flow'
+      ],
+      requirements: 'Requires Boss Beacon key to unlock',
+      bestTime: weeklyBoss?.bestTime,
+      difficultyOffset: weeklyBoss?.difficultyOffset
+    };
 
-    const updatedDungeons = currentDungeons.map(d => {
+    const updatedDungeons = state.dungeons.map(d => {
       if (d.id === 'dungeon-weekly-boss') {
-        return { ...d, status: 'available' as const };
+        return newBoss;
       }
       return d;
     });
+
+    if (!weeklyBoss) {
+      updatedDungeons.push(newBoss);
+    }
 
     await Promise.all([
       saveProfile(updatedProfile),

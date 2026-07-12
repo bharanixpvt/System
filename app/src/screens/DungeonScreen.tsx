@@ -41,7 +41,7 @@ export function DungeonScreen() {
   return (
     <div className="space-y-4 pb-6">
       <div className="flex items-center gap-2 mb-1">
-        <Castle size={18} className="text-[#4FD8FF]" />
+        <Castle size={18} className="text-[#CBD5E1]" />
         <h1 className="text-lg font-bold">Dungeons</h1>
       </div>
       <p className="text-sm text-white/40 mb-4">Select a challenge to undertake</p>
@@ -147,7 +147,7 @@ export function DungeonScreen() {
                 <span className="flex items-center gap-1 text-xs text-white/40">
                   <Clock size={12} /> {Math.max(2, dungeon.estimatedMinutes - Math.floor((profile?.totalLevel || 1) / 15))} min limit
                 </span>
-                <span className="flex items-center gap-1 text-xs text-[#4FD8FF]">
+                <span className="flex items-center gap-1 text-xs text-[#CBD5E1]">
                   <Zap size={12} /> +{dungeon.xpReward} XP
                 </span>
                 {dungeon.bestTime && (
@@ -235,7 +235,7 @@ function DungeonActive({ dungeon, rankLevel, timerBonusSeconds, difficultyReduct
         <p className="text-xs text-white/40">
           Time remaining · Difficulty {effectiveDifficulty}/5
           {offset > 0 && <span className="text-amber-400 ml-1">(+{offset} Escalated)</span>}
-          {permBonus > 0 && <span className="text-[#4FD8FF] ml-1">(+{permBonus}s Permanent)</span>}
+          {permBonus > 0 && <span className="text-[#CBD5E1] ml-1">(+{permBonus}s Permanent)</span>}
         </p>
 
         {lost ? (
@@ -248,7 +248,7 @@ function DungeonActive({ dungeon, rankLevel, timerBonusSeconds, difficultyReduct
             {!isRunning ? (
               <button
                 onClick={() => { onStart(); setIsRunning(true); }}
-                className="px-6 py-2.5 bg-[#4FD8FF]/20 text-[#4FD8FF] rounded-lg text-sm font-medium border border-[#4FD8FF]/30"
+                className="px-6 py-2.5 bg-[#CBD5E1]/20 text-[#CBD5E1] rounded-lg text-sm font-medium border border-[#CBD5E1]/30"
               >
                 Start
               </button>
@@ -285,7 +285,7 @@ function DungeonActive({ dungeon, rankLevel, timerBonusSeconds, difficultyReduct
                   onClick={() => setFeltEasy(false)}
                   className={`flex-1 py-1.5 px-3 rounded text-xs font-semibold border transition-all ${
                     !feltEasy
-                      ? 'bg-[#4FD8FF]/20 text-[#4FD8FF] border-[#4FD8FF]/30'
+                      ? 'bg-[#CBD5E1]/20 text-[#CBD5E1] border-[#CBD5E1]/30'
                       : 'bg-white/5 text-white/45 border-transparent hover:bg-white/10'
                   }`}
                 >
@@ -311,7 +311,7 @@ function DungeonActive({ dungeon, rankLevel, timerBonusSeconds, difficultyReduct
 
             <button
               onClick={handleComplete}
-              className="w-full py-2.5 bg-gradient-to-r from-[#4FD8FF] to-[#3A8DFF] text-[#050608] rounded-lg text-sm font-bold"
+              className="w-full py-2.5 bg-gradient-to-r from-[#CBD5E1] to-[#64748B] text-[#050608] rounded-lg text-sm font-bold"
             >
               Claim Rewards (+{dungeon.xpReward} XP)
             </button>
@@ -326,7 +326,7 @@ function DungeonActive({ dungeon, rankLevel, timerBonusSeconds, difficultyReduct
           {!isEditing && !isRunning && !completed && (
             <button
               onClick={() => setIsEditing(true)}
-              className="flex items-center gap-1 text-xs text-[#4FD8FF] hover:underline"
+              className="flex items-center gap-1 text-xs text-[#CBD5E1] hover:underline"
             >
               <Sliders size={12} />
               Customize
@@ -346,7 +346,7 @@ function DungeonActive({ dungeon, rankLevel, timerBonusSeconds, difficultyReduct
                     updated[i] = e.target.value;
                     setLocalExercises(updated);
                   }}
-                  className="flex-1 text-xs bg-white/5 border border-white/10 rounded px-2.5 py-1.5 text-white focus:border-[#4FD8FF]/50 focus:outline-none"
+                  className="flex-1 text-xs bg-white/5 border border-white/10 rounded px-2.5 py-1.5 text-white focus:border-[#CBD5E1]/50 focus:outline-none"
                 />
                 <button
                   onClick={() => {
@@ -365,7 +365,7 @@ function DungeonActive({ dungeon, rankLevel, timerBonusSeconds, difficultyReduct
                 placeholder="Add custom exercise..."
                 value={newExerciseText}
                 onChange={(e) => setNewExerciseText(e.target.value)}
-                className="flex-1 text-xs bg-white/5 border border-white/10 rounded px-2.5 py-1.5 text-white focus:border-[#4FD8FF]/50 focus:outline-none"
+                className="flex-1 text-xs bg-white/5 border border-white/10 rounded px-2.5 py-1.5 text-white focus:border-[#CBD5E1]/50 focus:outline-none"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault();
@@ -383,7 +383,7 @@ function DungeonActive({ dungeon, rankLevel, timerBonusSeconds, difficultyReduct
                     setNewExerciseText('');
                   }
                 }}
-                className="p-1.5 rounded bg-[#4FD8FF]/15 hover:bg-[#4FD8FF]/25 text-[#4FD8FF] border border-[#4FD8FF]/20"
+                className="p-1.5 rounded bg-[#CBD5E1]/15 hover:bg-[#CBD5E1]/25 text-[#CBD5E1] border border-[#CBD5E1]/20"
               >
                 <Plus size={14} />
               </button>
@@ -392,7 +392,7 @@ function DungeonActive({ dungeon, rankLevel, timerBonusSeconds, difficultyReduct
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={() => setIsEditing(false)}
-                className="px-3 py-1 bg-[#4FD8FF]/20 hover:bg-[#4FD8FF]/30 text-[#4FD8FF] border border-[#4FD8FF]/20 rounded text-xs font-semibold"
+                className="px-3 py-1 bg-[#CBD5E1]/20 hover:bg-[#CBD5E1]/30 text-[#CBD5E1] border border-[#CBD5E1]/20 rounded text-xs font-semibold"
               >
                 Done
               </button>
@@ -414,7 +414,7 @@ function DungeonActive({ dungeon, rankLevel, timerBonusSeconds, difficultyReduct
       <div className="glass-card p-4">
         <h3 className="text-sm font-semibold mb-2">Rewards</h3>
         <div className="flex gap-4">
-          <span className="flex items-center gap-1 text-sm text-[#4FD8FF]">
+          <span className="flex items-center gap-1 text-sm text-[#CBD5E1]">
             <Zap size={14} /> {dungeon.xpReward} XP
           </span>
           <span className="flex items-center gap-1 text-sm text-[#EAB308]">

@@ -30,7 +30,7 @@ export function DashboardScreen() {
     ? ((profile.totalXP % profile.xpToNextLevel) / profile.xpToNextLevel) * 100
     : 0;
 
-  const rankColor = RANK_LEVEL_RANGES[profile.currentRank]?.color || '#4FD8FF';
+  const rankColor = RANK_LEVEL_RANGES[profile.currentRank]?.color || '#CBD5E1';
 
   return (
     <div className="space-y-5 pb-6">
@@ -73,7 +73,7 @@ export function DashboardScreen() {
           <div className="mb-4">
             <div className="flex justify-between text-xs mb-1.5">
               <span className="text-white/50">XP Progress</span>
-              <span className="text-[#4FD8FF]">{Math.round(xpPercent)}%</span>
+              <span className="text-[#CBD5E1]">{Math.round(xpPercent)}%</span>
             </div>
             <div className="xp-bar">
               <motion.div
@@ -125,7 +125,7 @@ export function DashboardScreen() {
             className={`h-full rounded-full ${
               profile.fatigue > 70 ? 'bg-gradient-to-r from-[#FF5A5F] to-[#FBBF24]' :
               profile.fatigue > 40 ? 'bg-gradient-to-r from-[#FBBF24] to-[#4ADE80]' :
-              'bg-gradient-to-r from-[#4ADE80] to-[#4FD8FF]'
+              'bg-gradient-to-r from-[#4ADE80] to-[#CBD5E1]'
             }`}
           />
         </div>
@@ -149,7 +149,7 @@ export function DashboardScreen() {
           <h2 className="text-sm font-semibold">Active Quests</h2>
           <button
             onClick={() => navigateTo('quests' as ScreenName)}
-            className="flex items-center gap-1 text-xs text-[#4FD8FF] hover:text-[#4FD8FF]/80 transition-colors"
+            className="flex items-center gap-1 text-xs text-[#CBD5E1] hover:text-[#CBD5E1]/80 transition-colors"
           >
             View All <ChevronRight size={14} />
           </button>
@@ -169,7 +169,7 @@ export function DashboardScreen() {
                 <p className="text-sm font-medium truncate">{quest.name}</p>
                 <p className="text-xs text-white/40 truncate">{quest.description}</p>
               </div>
-              <span className="text-xs font-bold text-[#4FD8FF] ml-3">+{quest.xpReward} XP</span>
+              <span className="text-xs font-bold text-[#CBD5E1] ml-3">+{quest.xpReward} XP</span>
             </motion.div>
           ))}
           {quests.filter(q => q.status === 'active').length === 0 && (
@@ -190,7 +190,7 @@ export function DashboardScreen() {
           label="Start Training"
           description="Begin a session"
           onClick={() => navigateTo('training' as ScreenName)}
-          color="#4FD8FF"
+          color="#CBD5E1"
         />
         <QuickActionButton
           icon={Award}
@@ -213,7 +213,7 @@ export function DashboardScreen() {
             <h2 className="text-sm font-semibold">Top Attributes</h2>
             <button
               onClick={() => navigateTo('stats' as ScreenName)}
-              className="flex items-center gap-1 text-xs text-[#4FD8FF] hover:text-[#4FD8FF]/80 transition-colors"
+              className="flex items-center gap-1 text-xs text-[#CBD5E1] hover:text-[#CBD5E1]/80 transition-colors"
             >
               View All <ChevronRight size={14} />
             </button>

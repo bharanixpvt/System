@@ -222,6 +222,7 @@ export interface SystemSettings {
   playerName?: string;
   onboardingComplete: boolean;
   bossDungeonPenaltyEnabled?: boolean;
+  systemPaused?: boolean;
 }
 
 export interface Dungeon {
@@ -378,7 +379,7 @@ export interface ExportData {
 export const RANK_LEVEL_RANGES: Record<Rank, { min: number; max: number; color: string }> = {
   'E Rank': { min: 1, max: 10, color: '#6B7280' },
   'D Rank': { min: 11, max: 25, color: '#22C55E' },
-  'C Rank': { min: 26, max: 45, color: '#3B82F6' },
+  'C Rank': { min: 26, max: 45, color: '#64748B' },
   'B Rank': { min: 46, max: 70, color: '#8B5CF6' },
   'A Rank': { min: 71, max: 100, color: '#F59E0B' },
   'S Rank': { min: 101, max: 150, color: '#EF4444' },
@@ -386,7 +387,7 @@ export const RANK_LEVEL_RANGES: Record<Rank, { min: number; max: number; color: 
   'SSS Rank': { min: 251, max: 400, color: '#F97316' },
   'National Level': { min: 401, max: 600, color: '#06B6D4' },
   'Monarch Level': { min: 601, max: 850, color: '#EAB308' },
-  'Shadow Monarch': { min: 851, max: 999, color: '#4FD8FF' },
+  'Shadow Monarch': { min: 851, max: 999, color: '#CBD5E1' },
 };
 
 export const RANK_ORDER: Rank[] = [
@@ -407,12 +408,12 @@ export const STAT_CONFIG: Record<StatName, { displayName: string; description: s
   strength: { displayName: 'Strength', description: 'Physical power, push/pull capacity', color: '#EF4444', icon: 'Dumbbell' },
   agility: { displayName: 'Agility', description: 'Speed, reaction, change of direction', color: '#FBBF24', icon: 'Zap' },
   endurance: { displayName: 'Endurance', description: 'Stamina, cardiovascular capacity', color: '#4ADE80', icon: 'Heart' },
-  focus: { displayName: 'Focus', description: 'Mental concentration, discipline', color: '#3A8DFF', icon: 'Target' },
+  focus: { displayName: 'Focus', description: 'Mental concentration, discipline', color: '#64748B', icon: 'Target' },
   reaction: { displayName: 'Reaction', description: 'Response speed, reflexes', color: '#F97316', icon: 'Gauge' },
   combat: { displayName: 'Combat', description: 'Defensive movement and technique', color: '#8B5CF6', icon: 'Shield' },
   mobility: { displayName: 'Mobility', description: 'Range of motion, flexibility', color: '#06B6D4', icon: 'Move' },
   discipline: { displayName: 'Discipline', description: 'Consistency, willpower', color: '#EC4899', icon: 'Lock' },
-  recovery: { displayName: 'Recovery', description: 'Rest quality, fatigue management', color: '#4FD8FF', icon: 'BatteryCharging' },
+  recovery: { displayName: 'Recovery', description: 'Rest quality, fatigue management', color: '#CBD5E1', icon: 'BatteryCharging' },
 };
 
 export const DEFAULT_DAILY_QUESTS = [

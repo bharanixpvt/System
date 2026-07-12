@@ -361,7 +361,7 @@ export function createDefaultDungeons(): import('@/types').Dungeon[] {
       type: 'beginner',
       description: 'Entry-level challenge to test basic fitness. Complete a series of foundational exercises.',
       difficulty: 1,
-      color: '#3B82F6',
+      color: '#64748B',
       estimatedMinutes: 15,
       xpReward: 150,
       coinReward: 30,
@@ -412,7 +412,7 @@ export function createDefaultDungeons(): import('@/types').Dungeon[] {
       id: 'dungeon-weekly-boss',
       name: 'Weekly Boss Dungeon',
       type: 'boss',
-      description: 'An elite evaluation of your physical power. Appears only on weekends.',
+      description: 'An elite evaluation of your physical power. Summoned via Boss Beacon.',
       difficulty: 5,
       color: '#EF4444',
       estimatedMinutes: 35,
@@ -426,7 +426,7 @@ export function createDefaultDungeons(): import('@/types').Dungeon[] {
         'Reaction Drill x10 (neuromuscular check)',
         '15-minute Shadow Boxing / Flow'
       ],
-      requirements: 'Unlocks on weekends when scheduled'
+      requirements: 'Requires Boss Beacon key to unlock'
     },
   ];
 }

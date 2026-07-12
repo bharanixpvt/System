@@ -25,16 +25,50 @@ import { PenaltyZoneModal } from '@/components/PenaltyZoneModal';
 import { CombatTrainingPrompt } from '@/components/CombatTrainingPrompt';
 import { CinematicBossNotification } from '@/components/CinematicBossNotification';
 import { SplashScreen } from '@/components/SplashScreen';
+import { SuspensionScreen } from '@/components/SuspensionScreen';
 
 function App() {
-  const { initialize, isLoading, currentScreen } = useGameStore();
+  const { initialize, isLoading, currentScreen, settings } = useGameStore();
   const [showContent, setShowContent] = useState(false);
-  const [splashDone, setSplashDone] = useState(false);
+  const [splashDone, setSplashDone] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+      if (isStandalone) {
+        return true;
+      }
+    }
+    return false;
+  });
 
   useEffect(() => {
     initialize().then(() => {
       setTimeout(() => setShowContent(true), 300);
     });
+
+    // Prevent accidental reloading
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = 'SYSTEM: Re-initializing will reset temporary state. Confirm exit?';
+      return e.returnValue;
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.key === 'F5' ||
+        (e.ctrlKey && e.key === 'r') ||
+        (e.metaKey && e.key === 'r')
+      ) {
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   // Splash screen plays first — cinematic logo animation
@@ -44,6 +78,10 @@ function App() {
 
   if (isLoading || !showContent) {
     return <LoadingScreen />;
+  }
+
+  if (settings?.systemPaused) {
+    return <SuspensionScreen />;
   }
 
   // Screen router
@@ -83,7 +121,7 @@ function App() {
   const useLayout = !noLayoutScreens.includes(currentScreen);
 
   return (
-    <div className="min-h-screen bg-[#050608] text-white selection:bg-[#4FD8FF] selection:text-black">
+    <div className="min-h-screen bg-[#050608] text-white selection:bg-[#CBD5E1] selection:text-black">
       {useLayout ? (
         <AppLayout>
           {renderScreen()}
