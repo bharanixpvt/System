@@ -63,6 +63,7 @@ export interface PlayerProfile {
   id: string;
   name: string;
   age: number;
+  dateOfBirth?: string; // ISO date string YYYY-MM-DD
   gender: string;
   weight: number;
   height: number;

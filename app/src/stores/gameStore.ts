@@ -156,7 +156,7 @@ interface SystemState {
   
   // Settings
   updateSettings: (settings: Partial<SystemSettings>) => Promise<void>;
-  updateProfile: (profile: Pick<PlayerProfile, 'name' | 'height' | 'weight' | 'bodyFat'>) => Promise<void>;
+  updateProfile: (profile: Pick<PlayerProfile, 'name' | 'height' | 'weight' | 'bodyFat'> & { age?: number; dateOfBirth?: string }) => Promise<void>;
   toggleSystemPause: () => Promise<void>;
   
   // Export/Import
@@ -178,6 +178,7 @@ interface SystemState {
 interface OnboardingData {
   name: string;
   age: number;
+  dateOfBirth: string; // ISO date string YYYY-MM-DD
   gender: string;
   weight: number;
   height: number;
@@ -360,6 +361,7 @@ export const useGameStore = create<SystemState>((set, get) => ({
       id: 'player',
       name: data.name,
       age: data.age,
+      dateOfBirth: data.dateOfBirth,
       gender: data.gender,
       weight: data.weight,
       height: data.height,

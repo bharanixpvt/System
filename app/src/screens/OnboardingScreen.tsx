@@ -10,7 +10,9 @@ export function OnboardingScreen() {
   const [step, setStep] = useState(0);
   const [formData, setFormData] = useState({
     name: '',
-    age: '',
+    dobDay: '',
+    dobMonth: '',
+    dobYear: '',
     gender: 'male',
     weight: '',
     height: '',
@@ -24,6 +26,16 @@ export function OnboardingScreen() {
     screenTime: '6',
     goals: [] as string[],
   });
+
+  const calculateAgeFromDOB = (day: string, month: string, year: string): number => {
+    const d = parseInt(day), m = parseInt(month), y = parseInt(year);
+    if (!d || !m || !y || y < 1900 || y > new Date().getFullYear()) return 0;
+    const today = new Date();
+    let age = today.getFullYear() - y;
+    const monthDiff = today.getMonth() + 1 - m;
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < d)) age--;
+    return Math.max(0, age);
+  };
   const { completeOnboarding } = useGameStore();
 
   const updateField = (field: string, value: string | number | string[]) => {
@@ -31,15 +43,24 @@ export function OnboardingScreen() {
   };
 
   const canProceed = () => {
-    if (step === 0) return formData.name && formData.age && formData.weight && formData.height;
+    if (step === 0) {
+      const dobValid = formData.dobDay && formData.dobMonth && formData.dobYear &&
+        parseInt(formData.dobYear) >= 1900 && parseInt(formData.dobYear) <= new Date().getFullYear() - 5;
+      return formData.name && dobValid && formData.weight && formData.height;
+    }
     if (step === 1) return formData.maxPushups && formData.maxPlank;
     return true;
   };
 
   const handleSubmit = () => {
     playButtonPress();
-    
-    const parsedAge = parseInt(formData.age);
+
+    const computedAge = calculateAgeFromDOB(formData.dobDay, formData.dobMonth, formData.dobYear);
+    const y = formData.dobYear.padStart(4, '0');
+    const mo = formData.dobMonth.padStart(2, '0');
+    const d = formData.dobDay.padStart(2, '0');
+    const dateOfBirth = `${y}-${mo}-${d}`;
+
     const parsedWeight = parseFloat(formData.weight);
     const parsedHeight = parseFloat(formData.height);
     const parsedBodyFat = parseFloat(formData.bodyFat);
@@ -47,13 +68,22 @@ export function OnboardingScreen() {
     const parsedPlank = parseInt(formData.maxPlank);
     const parsedScreenTime = parseInt(formData.screenTime);
 
+    // Auto-calculate body fat from BMI if not provided
+    let bodyFat = isNaN(parsedBodyFat) ? 0 : parsedBodyFat;
+    if (!bodyFat && parsedHeight >= 100 && parsedWeight >= 25 && computedAge > 0) {
+      const bmi = parsedWeight / Math.pow(parsedHeight / 100, 2);
+      const sexFactor = formData.gender === 'male' ? 1 : 0;
+      bodyFat = Math.max(3, Math.min(60, Math.round((1.2 * bmi + 0.23 * computedAge - 10.8 * sexFactor - 5.4) * 10) / 10));
+    }
+
     completeOnboarding({
       name: formData.name,
-      age: isNaN(parsedAge) ? 25 : parsedAge,
+      age: computedAge || 25,
+      dateOfBirth,
       gender: formData.gender,
       weight: isNaN(parsedWeight) ? 75 : parsedWeight,
       height: isNaN(parsedHeight) ? 175 : parsedHeight,
-      bodyFat: isNaN(parsedBodyFat) ? 20 : parsedBodyFat,
+      bodyFat: bodyFat || 20,
       fitnessLevel: formData.fitnessLevel,
       sleepQuality: formData.sleepQuality,
       maxPushups: isNaN(parsedPushups) ? 0 : parsedPushups,
@@ -150,8 +180,31 @@ export function OnboardingScreen() {
   );
 }
 
+// Helper: compute age live for display
+function computeAge(day: string, month: string, year: string): number | null {
+  const d = parseInt(day), m = parseInt(month), y = parseInt(year);
+  if (!d || !m || !y || y < 1900 || y > new Date().getFullYear()) return null;
+  const today = new Date();
+  let age = today.getFullYear() - y;
+  const monthDiff = today.getMonth() + 1 - m;
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < d)) age--;
+  return age >= 0 ? age : null;
+}
+
 // Step Components
 function StepIdentity({ formData, updateField }: { formData: any; updateField: (f: string, v: any) => void }) {
+  const liveAge = computeAge(formData.dobDay, formData.dobMonth, formData.dobYear);
+
+  const days = Array.from({ length: 31 }, (_, i) => i + 1);
+  const months = [
+    { v: '1', l: 'Jan' }, { v: '2', l: 'Feb' }, { v: '3', l: 'Mar' },
+    { v: '4', l: 'Apr' }, { v: '5', l: 'May' }, { v: '6', l: 'Jun' },
+    { v: '7', l: 'Jul' }, { v: '8', l: 'Aug' }, { v: '9', l: 'Sep' },
+    { v: '10', l: 'Oct' }, { v: '11', l: 'Nov' }, { v: '12', l: 'Dec' },
+  ];
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 80 }, (_, i) => currentYear - 5 - i);
+
   return (
     <div className="space-y-5">
       <div className="text-center mb-6">
@@ -161,20 +214,55 @@ function StepIdentity({ formData, updateField }: { formData: any; updateField: (
       </div>
 
       <InputField label="Player Name" value={formData.name} onChange={v => updateField('name', v)} placeholder="Your name" />
-      <div className="grid grid-cols-2 gap-3">
-        <InputField label="Age" value={formData.age} onChange={v => updateField('age', v)} type="number" placeholder="25" />
-        <div>
-          <label className="block text-xs text-white/50 mb-1.5 uppercase tracking-wider">Gender</label>
+
+      {/* Date of Birth */}
+      <div>
+        <label className="block text-xs text-white/50 mb-1.5 uppercase tracking-wider">Date of Birth</label>
+        <div className="grid grid-cols-3 gap-2">
           <select
-            value={formData.gender}
-            onChange={e => updateField('gender', e.target.value)}
-            className="w-full px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-sm focus:outline-none focus:border-[#CBD5E1]/50"
+            value={formData.dobDay}
+            onChange={e => updateField('dobDay', e.target.value)}
+            className="w-full px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-sm focus:outline-none focus:border-[#CBD5E1]/50 text-white"
           >
-            <option value="male">Male</option>
-            <option value="female">Female</option>
+            <option value="">Day</option>
+            {days.map(d => <option key={d} value={String(d)}>{d}</option>)}
+          </select>
+          <select
+            value={formData.dobMonth}
+            onChange={e => updateField('dobMonth', e.target.value)}
+            className="w-full px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-sm focus:outline-none focus:border-[#CBD5E1]/50 text-white"
+          >
+            <option value="">Month</option>
+            {months.map(m => <option key={m.v} value={m.v}>{m.l}</option>)}
+          </select>
+          <select
+            value={formData.dobYear}
+            onChange={e => updateField('dobYear', e.target.value)}
+            className="w-full px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-sm focus:outline-none focus:border-[#CBD5E1]/50 text-white"
+          >
+            <option value="">Year</option>
+            {years.map(y => <option key={y} value={String(y)}>{y}</option>)}
           </select>
         </div>
+        {liveAge !== null && (
+          <p className="mt-1.5 text-xs text-[#CBD5E1]/70">
+            Age: <span className="font-semibold text-[#CBD5E1]">{liveAge} years old</span>
+          </p>
+        )}
       </div>
+
+      <div>
+        <label className="block text-xs text-white/50 mb-1.5 uppercase tracking-wider">Gender</label>
+        <select
+          value={formData.gender}
+          onChange={e => updateField('gender', e.target.value)}
+          className="w-full px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-sm focus:outline-none focus:border-[#CBD5E1]/50"
+        >
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+      </div>
+
       <div className="grid grid-cols-2 gap-3">
         <InputField label="Weight (kg)" value={formData.weight} onChange={v => updateField('weight', v)} type="number" placeholder="75" />
         <InputField label="Height (cm)" value={formData.height} onChange={v => updateField('height', v)} type="number" placeholder="175" />
