@@ -32,12 +32,15 @@ export function ShopScreen() {
 
   const categories = ['utility'] as ShopItemCategory[];
 
-  const isPurchased = (itemId: string) => {
-    const item = shopItems.find(i => i.id === itemId);
-    if (!item) return false;
-    if (item.type === 'utility') return false; // Utilities can be purchased multiple times
-    return inventory.some(i => i.id === itemId);
-  };
+const isPurchased = (itemId: string) => {
+  const item = shopItems.find(i => i.id === itemId);
+  if (!item) return false;
+
+  // Utility items can be purchased multiple times.
+  if (item.type === 'utility') return false;
+
+  return inventory.some(i => i.id === itemId);
+};
 
   return (
     <div className="space-y-4 pb-6">
