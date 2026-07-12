@@ -31,7 +31,7 @@ export function ShopScreen() {
 
 
 const isPurchased = (_id: string) => false;
-};
+
 
   return (
     <div className="space-y-4 pb-6">
