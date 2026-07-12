@@ -27,14 +27,7 @@ const CATEGORY_LABELS: Record<ShopItemCategory, string> = {
 export function ShopScreen() {
   const { profile, shopItems, inventory, purchaseItem } = useGameStore();
 
-  const categories: ShopItemCategory[] = [
-  'utility',
-  'theme',
-  'animation',
-  'customization',
-  'widget',
-  'title_cosmetic',
-];
+  const categories = ['utility'] as ShopItemCategory[];
 
   const isPurchased = (itemId: string) => {
   return inventory.some(item => item.id === itemId);
