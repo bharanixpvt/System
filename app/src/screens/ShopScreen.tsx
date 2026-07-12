@@ -30,8 +30,7 @@ export function ShopScreen() {
   const categories = ['utility'] as ShopItemCategory[];
 
 
-  const isPurchased = (itemId: string) => {
-  return inventory.some(item => item.id === itemId);
+const isPurchased = (_id: string) => false;
 };
 
   return (
