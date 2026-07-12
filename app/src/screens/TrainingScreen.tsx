@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Dumbbell, Zap, Heart, Move, Shield,
-  ChevronRight, Lock, Check, Play, Trophy, Clock, Flame
+  ChevronRight, Lock, Check, Play, Trophy, Clock, Flame, TimerReset, CircleCheck
 } from 'lucide-react';
 import { playButtonPress } from '@/lib/audio';
 import type { TrainingPathName } from '@/types';
@@ -93,11 +93,31 @@ export function TrainingScreen() {
 function PathDetailScreen({ path, onBack }: { path: import('@/types').TrainingPath; onBack: () => void }) {
   const { completeTrainingExercise } = useGameStore();
   const [activeExercise, setActiveExercise] = useState<number | null>(null);
+  const [completedSets, setCompletedSets] = useState(0);
+  const [restSeconds, setRestSeconds] = useState(0);
   const Icon = PATH_ICONS[path.name];
+
+  useEffect(() => {
+    if (restSeconds <= 0) return;
+    const timer = window.setInterval(() => setRestSeconds(seconds => Math.max(0, seconds - 1)), 1000);
+    return () => window.clearInterval(timer);
+  }, [restSeconds]);
 
   const handleCompleteExercise = (index: number) => {
     completeTrainingExercise(path.name, index);
     setActiveExercise(null);
+  };
+
+  const completeSet = (index: number, exercise: import('@/types').TrainingExercise) => {
+    const nextSet = completedSets + 1;
+    if (nextSet >= exercise.sets) {
+      handleCompleteExercise(index);
+      setCompletedSets(0);
+      setRestSeconds(0);
+      return;
+    }
+    setCompletedSets(nextSet);
+    setRestSeconds(exercise.restSeconds);
   };
 
   return (
@@ -133,6 +153,11 @@ function PathDetailScreen({ path, onBack }: { path: import('@/types').TrainingPa
             style={{ width: `${path.progress}%`, backgroundColor: path.color }}
           />
         </div>
+        <div className="mt-4 grid grid-cols-3 gap-2 border-t border-white/5 pt-3 text-center">
+          <div><p className="text-[10px] text-white/35">WARM-UP</p><p className="mt-1 text-xs font-medium">3–5 min</p></div>
+          <div><p className="text-[10px] text-white/35">FOCUS</p><p className="mt-1 text-xs font-medium">Controlled form</p></div>
+          <div><p className="text-[10px] text-white/35">COOL-DOWN</p><p className="mt-1 text-xs font-medium">2 min</p></div>
+        </div>
       </div>
 
       {/* Exercise List */}
@@ -154,7 +179,12 @@ function PathDetailScreen({ path, onBack }: { path: import('@/types').TrainingPa
                 isUnlocked ? 'hover:border-white/15 cursor-pointer' :
                 'opacity-40'
               }`}
-              onClick={() => isUnlocked && !isCompleted && setActiveExercise(isActive ? null : index)}
+              onClick={() => {
+                if (!isUnlocked || isCompleted) return;
+                setCompletedSets(0);
+                setRestSeconds(0);
+                setActiveExercise(isActive ? null : index);
+              }}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -194,6 +224,10 @@ function PathDetailScreen({ path, onBack }: { path: import('@/types').TrainingPa
                     className="mt-3 pt-3 border-t border-white/5"
                   >
                     <p className="text-xs text-white/50 mb-3">{exercise.description}</p>
+                    <div className="mb-3 flex items-center justify-between rounded-lg border border-white/8 bg-black/15 px-3 py-2">
+                      <div className="flex items-center gap-2"><TimerReset size={15} style={{ color: path.color }} /><span className="text-xs text-white/65">Live session</span></div>
+                      <span className="text-xs font-semibold">Set {Math.min(completedSets + 1, exercise.sets)} of {exercise.sets}</span>
+                    </div>
                     <div className="grid grid-cols-3 gap-2 mb-3">
                       <div className="text-center p-2 rounded bg-white/5">
                         <Flame size={14} className="mx-auto text-[#FBBF24] mb-1" />
@@ -208,12 +242,16 @@ function PathDetailScreen({ path, onBack }: { path: import('@/types').TrainingPa
                         <div className="text-xs font-medium">{exercise.restSeconds}s rest</div>
                       </div>
                     </div>
-                    <button
-                      onClick={() => handleCompleteExercise(index)}
-                      className="w-full py-2.5 bg-[#CBD5E1]/15 hover:bg-[#CBD5E1]/25 text-[#CBD5E1] rounded-lg text-xs font-medium transition-colors border border-[#CBD5E1]/30"
-                    >
-                      Mark Complete
-                    </button>
+                    {restSeconds > 0 ? (
+                      <div className="rounded-lg border border-[#4ADE80]/20 bg-[#4ADE80]/10 p-3 text-center"><p className="text-[10px] uppercase tracking-wider text-[#4ADE80]">Recovery interval</p><p className="mt-1 text-xl font-bold text-white">0:{String(restSeconds).padStart(2, '0')}</p><button onClick={e => { e.stopPropagation(); setRestSeconds(0); }} className="mt-1 text-xs text-white/50 hover:text-white">Skip rest</button></div>
+                    ) : (
+                      <button
+                        onClick={e => { e.stopPropagation(); completeSet(index, exercise); }}
+                        className="w-full py-2.5 bg-[#CBD5E1]/15 hover:bg-[#CBD5E1]/25 text-[#CBD5E1] rounded-lg text-xs font-medium transition-colors border border-[#CBD5E1]/30"
+                      >
+                        <span className="flex items-center justify-center gap-2"><CircleCheck size={15} />{completedSets + 1 >= exercise.sets ? 'Finish exercise' : 'Complete set & start rest'}</span>
+                      </button>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>

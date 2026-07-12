@@ -184,6 +184,7 @@ export interface InventoryItem {
   purchasedAt?: Date;
   equipped: boolean;
   quantity?: number;
+  rewardOnly?: boolean;
 }
 
 export interface HistoryEntry {
@@ -277,6 +278,7 @@ export interface ShopItem {
   preview: string;
   purchased: boolean;
   effect?: string;
+  secret?: boolean;
 }
 
 export interface Notification {

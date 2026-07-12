@@ -4,18 +4,41 @@ import { motion } from 'framer-motion';
 import {
   Settings, Volume2, VolumeX, Bell, BellOff, Moon,
   Download, Upload, Trash2, AlertTriangle, ChevronRight,
-  Shield, RefreshCw
+  Shield, RefreshCw, UserRound, Save
 } from 'lucide-react';
 import { playButtonPress } from '@/lib/audio';
 import { exportAllData } from '@/db';
 import { encryptData, downloadSystemFile, readSystemFile } from '@/lib/encryption';
 
 export function SettingsScreen() {
-  const { settings, profile, updateSettings, resetSystem, importData, navigateTo, toggleSystemPause } = useGameStore();
+  const { settings, profile, updateSettings, updateProfile, resetSystem, importData, navigateTo, toggleSystemPause } = useGameStore();
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [showImportConfirm, setShowImportConfirm] = useState(false);
   const [importData_, setImportData] = useState<Record<string, unknown> | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [profileDraft, setProfileDraft] = useState(() => ({
+    name: profile?.name || '',
+    height: String(profile?.height || ''),
+    weight: String(profile?.weight || ''),
+  }));
+
+  const calculateBodyFat = () => {
+    if (!profile) return 0;
+    const height = Number(profileDraft.height);
+    const weight = Number(profileDraft.weight);
+    if (!height || !weight || height < 100 || weight < 25) return profile.bodyFat;
+    const bmi = weight / Math.pow(height / 100, 2);
+    const sexFactor = profile.gender.toLowerCase() === 'male' ? 1 : profile.gender.toLowerCase() === 'female' ? 0 : 0.5;
+    return Math.max(3, Math.min(60, Math.round((1.2 * bmi + 0.23 * profile.age - 10.8 * sexFactor - 5.4) * 10) / 10));
+  };
+
+  const saveProfileDetails = async () => {
+    if (!profile) return;
+    const height = Number(profileDraft.height);
+    const weight = Number(profileDraft.weight);
+    if (!profileDraft.name.trim() || height < 100 || weight < 25) return;
+    await updateProfile({ name: profileDraft.name.trim(), height, weight, bodyFat: calculateBodyFat() });
+  };
 
   const handleExport = async () => {
     playButtonPress();
@@ -73,6 +96,21 @@ export function SettingsScreen() {
             </div>
           </div>
         </motion.div>
+      )}
+
+      {profile && (
+        <SettingsSection title="Profile & Measurements">
+          <div className="mb-3 flex items-center gap-2 text-white/60"><UserRound size={16} className="text-[#CBD5E1]" /><span className="text-xs">Keep your profile current for more accurate training targets.</span></div>
+          <div className="space-y-3">
+            <label className="block text-xs text-white/45">Name<input value={profileDraft.name} onChange={e => setProfileDraft(d => ({ ...d, name: e.target.value }))} className="mt-1.5 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white outline-none focus:border-[#CBD5E1]/50" /></label>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="block text-xs text-white/45">Height (cm)<input type="number" min="100" max="250" value={profileDraft.height} onChange={e => setProfileDraft(d => ({ ...d, height: e.target.value }))} className="mt-1.5 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white outline-none focus:border-[#CBD5E1]/50" /></label>
+              <label className="block text-xs text-white/45">Weight (kg)<input type="number" min="25" max="350" step="0.1" value={profileDraft.weight} onChange={e => setProfileDraft(d => ({ ...d, weight: e.target.value }))} className="mt-1.5 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white outline-none focus:border-[#CBD5E1]/50" /></label>
+            </div>
+            <div className="flex items-center justify-between rounded-lg border border-[#CBD5E1]/15 bg-[#CBD5E1]/5 px-3 py-2.5"><div><p className="text-xs font-medium text-[#CBD5E1]">Estimated body fat</p><p className="mt-0.5 text-[10px] text-white/40">BMI-based estimate using age, height, weight, and profile sex.</p></div><strong className="text-lg">{calculateBodyFat()}%</strong></div>
+            <button onClick={saveProfileDetails} className="btn-press flex w-full items-center justify-center gap-2 rounded-lg bg-[#CBD5E1] py-2.5 text-sm font-semibold text-[#050608] hover:bg-white"><Save size={15} />Save profile</button>
+          </div>
+        </SettingsSection>
       )}
 
       {/* Audio Settings */}

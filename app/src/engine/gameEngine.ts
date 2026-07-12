@@ -566,6 +566,11 @@ export function createDefaultShopItems(): import('@/types').ShopItem[] {
     { id: 'xp-catalyst', type: 'utility', name: 'XP Catalyst', description: 'Doubles the XP from your next quest and grants +25 coins.', effect: 'Activates when used from Inventory', cost: 140, preview: 'xp', purchased: false },
     { id: 'vitality-elixir', type: 'utility', name: 'Elixir of Vitality', description: 'Restores 50 fatigue immediately and clears the Penalty Zone.', effect: 'Activates when used from Inventory', cost: 130, preview: 'wind', purchased: false },
     { id: 'temporal-accelerator', type: 'utility', name: 'Temporal Accelerator', description: 'Permanently increases all future dungeon timers by 30 seconds.', effect: 'Activates when used from Inventory', cost: 175, preview: 'crystal', purchased: false },
+    { id: 'rank-sigil', type: 'utility', name: 'Rank Sigil', description: 'A hidden crest charged with condensed experience.', effect: 'Grants 300 XP immediately', cost: 180, preview: 'sigil', purchased: false, secret: true },
+    { id: 'void-compass', type: 'utility', name: 'Void Compass', description: 'A rare compass that reveals two safe paths through a dungeon.', effect: 'Reduces your next dungeon difficulty by 2', cost: 210, preview: 'void', purchased: false, secret: true },
+    { id: 'phoenix-feather', type: 'utility', name: 'Phoenix Feather', description: 'A legendary recovery relic, hidden from ordinary hunters.', effect: 'Restores 100 fatigue and clears the Penalty Zone', cost: 260, preview: 'phoenix', purchased: false, secret: true },
+    { id: 'sovereign-cache', type: 'utility', name: 'Sovereign Cache', description: 'A sealed treasury that only appears to persistent players.', effect: 'Grants 400 coins immediately', cost: 300, preview: 'cache', purchased: false, secret: true },
+    { id: 'prime-core', type: 'utility', name: 'Prime Core', description: 'An ultra-rare core that strengthens a complete dungeon attempt.', effect: 'Adds 5 minutes and reduces difficulty by 1 for your next dungeon', cost: 350, preview: 'prime', purchased: false, secret: true },
   ];
 }
 

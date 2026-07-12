@@ -156,6 +156,7 @@ interface SystemState {
   
   // Settings
   updateSettings: (settings: Partial<SystemSettings>) => Promise<void>;
+  updateProfile: (profile: Pick<PlayerProfile, 'name' | 'height' | 'weight' | 'bodyFat'>) => Promise<void>;
   toggleSystemPause: () => Promise<void>;
   
   // Export/Import
@@ -912,8 +913,20 @@ export const useGameStore = create<SystemState>((set, get) => ({
       // Typecast to any to allow dynamic profile parameters
       (profile as any).dungeonTimerPermanentBonusSeconds = ((profile as any).dungeonTimerPermanentBonusSeconds || 0) + 30;
     }
+    if (itemId === 'rank-sigil') {
+      profile.totalXP += 300;
+      const result = addXP(profile, 0);
+      Object.assign(profile, result.profile);
+    }
+    if (itemId === 'phoenix-feather') {
+      profile.fatigue = 0;
+      state.dismissPenaltyZone();
+    }
+    if (itemId === 'sovereign-cache') profile.coins += 400;
     await Promise.all([saveProfile(profile), saveInventoryItem(depleted), ...(itemId === 'boss-beacon' ? [saveDungeons(dungeons)] : [])]);
-    set({ profile, inventory, dungeons, dungeonTimerBonusSeconds: itemId === 'time-crystal' ? state.dungeonTimerBonusSeconds + 120 : state.dungeonTimerBonusSeconds, dungeonDifficultyReduction: itemId === 'dungeon-scout' ? state.dungeonDifficultyReduction + 1 : state.dungeonDifficultyReduction, systemMessage: itemId === 'boss-beacon' ? 'SYSTEM: Boss Beacon activated. Boss Dungeon unlocked.' : `SYSTEM: ${item.name} activated.` });
+    const timerBonus = itemId === 'time-crystal' ? 120 : itemId === 'prime-core' ? 300 : 0;
+    const difficultyReduction = itemId === 'dungeon-scout' ? 1 : itemId === 'void-compass' ? 2 : itemId === 'prime-core' ? 1 : 0;
+    set({ profile, inventory, dungeons, dungeonTimerBonusSeconds: state.dungeonTimerBonusSeconds + timerBonus, dungeonDifficultyReduction: state.dungeonDifficultyReduction + difficultyReduction, systemMessage: itemId === 'boss-beacon' ? 'SYSTEM: Boss Beacon activated. Boss Dungeon unlocked.' : `SYSTEM: ${item.name} activated.` });
   },
 
   consumeDungeonAids: () => set({ dungeonTimerBonusSeconds: 0, dungeonDifficultyReduction: 0 }),
@@ -1107,6 +1120,14 @@ export const useGameStore = create<SystemState>((set, get) => ({
     const updated = { ...state.settings, ...newSettings } as SystemSettings;
     await saveSettings(updated);
     set({ settings: updated });
+  },
+
+  updateProfile: async (changes) => {
+    const state = get();
+    if (!state.profile) return;
+    const profile = { ...state.profile, ...changes };
+    await saveProfile(profile);
+    set({ profile, systemMessage: 'SYSTEM: Profile measurements updated.' });
   },
 
   toggleSystemPause: async () => {
