@@ -63,6 +63,7 @@ import {
   resetAllData,
 } from '@/db';
 import { playQuestCompleted, playLevelUp, playAchievement, playPenalty, playNotification } from '@/lib/audio';
+import { DEFAULT_UTILITY_ITEMS } from '@/engine/gameEngine';
 
 const defaultSettings: SystemSettings = {
   audioEnabled: true,
@@ -184,7 +185,7 @@ export const useGameStore = create<SystemState>((set, get) => ({
   settings: null,
   dungeons: [],
   evaluations: [],
-  shopItems: [],
+  shopItems: DEFAULT_UTILITY_ITEMS,
   notifications: [],
   
   currentScreen: 'opening',
@@ -576,7 +577,46 @@ export const useGameStore = create<SystemState>((set, get) => ({
   useQuestUtility: async () => {},
   activateUtility: async () => {},
   consumeDungeonAids: () => {},
-  purchaseItem: async () => {},
+  purchaseItem: async (itemId: string) => {
+    const state = get();
+    if (!state.profile) return;
+    const item = DEFAULT_UTILITY_ITEMS.find(i => i.id === itemId);
+    if (!item) return;
+    if (state.profile.coins < item.cost) {
+      set({ showSystemNotification: 'SYSTEM: Insufficient coins for Utility activation.' });
+      return;
+    }
+
+    state.profile.coins -= item.cost;
+    
+    if (item.effect === 'penalty_erase') {
+      set({ penaltyZone: false });
+    } else if (item.effect === 'fatigue_reduce') {
+      state.profile.fatigue = Math.max(0, (state.profile.fatigue || 0) - 30);
+    } else if (item.effect === 'title_unlock') {
+      const newTitle: Title = {
+        id: `title-apex-${Date.now()}`,
+        name: 'Apex Operator',
+        description: 'Synchronized via SYSTEM Utility Repository',
+        unlocked: true,
+        equipped: false,
+        unlockedAt: new Date(),
+        bonus: '+5% XP from all quests',
+        tier: 'legendary',
+        condition: 'Purchased from SYSTEM Repository',
+      };
+      await saveTitles([...state.titles, newTitle]);
+      set({ titles: [...state.titles, newTitle] });
+    }
+
+    await saveProfile(state.profile);
+    playAchievement();
+
+    set({
+      profile: { ...state.profile },
+      systemMessage: `SYSTEM: Utility ${item.name} activated!`,
+    });
+  },
   equipItem: async () => {},
   equipTitle: async () => {},
   checkAchievements: async () => {},

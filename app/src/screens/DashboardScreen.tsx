@@ -15,7 +15,6 @@ import {
   Award,
   Clock,
   ScrollText,
-  Skull,
 } from 'lucide-react';
 import { RANK_LEVEL_RANGES } from '@/types';
 import type { ScreenName } from '@/types';
@@ -101,20 +100,20 @@ export function DashboardScreen() {
         </div>
       </motion.div>
 
-      {/* RUTHLESS SYSTEM BROADCAST CARD */}
+      {/* SYSTEM DIRECTIVE CARD */}
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="glass-card p-4 border-[#EF4444]/40 bg-gradient-to-r from-[#EF4444]/10 to-transparent relative overflow-hidden"
+        className="glass-card p-4 border-[#CBD5E1]/30 bg-gradient-to-r from-[#CBD5E1]/10 to-transparent relative overflow-hidden"
       >
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#EF4444]/20 border border-[#EF4444]/40 flex items-center justify-center shrink-0 mt-0.5">
-            <Skull size={20} className="text-[#EF4444] animate-pulse" />
+          <div className="w-10 h-10 rounded-xl bg-[#CBD5E1]/20 border border-[#CBD5E1]/30 flex items-center justify-center shrink-0 mt-0.5">
+            <Zap size={20} className="text-[#CBD5E1] animate-pulse" />
           </div>
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="system-text text-[#EF4444] text-xs">RUTHLESS DIRECTIVE</span>
+              <span className="system-text text-[#CBD5E1] text-xs">SYSTEM DIRECTIVE</span>
             </div>
             <p className="text-xs font-semibold text-white/90 leading-relaxed font-mono">
               "{ruthlessQuote}"

@@ -89,25 +89,25 @@ export function OnboardingScreen() {
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
 
   // Form State
-  const [preferredName, setPreferredName] = useState('Hunter');
-  const [age, setAge] = useState(24);
-  const [country, setCountry] = useState('United States');
-  const [language, setLanguage] = useState('English');
-  const [timezone, setTimezone] = useState('GMT-5');
+  const [preferredName, setPreferredName] = useState('');
+  const [age, setAge] = useState<number | ''>('');
+  const [country, setCountry] = useState('');
+  const [language, setLanguage] = useState('');
+  const [timezone, setTimezone] = useState('');
   const [purpose] = useState('Mastering my physical and mental potential.');
 
   const [lifeSituation, setLifeSituation] = useState<LifeSituation>('Working Professional');
   const [availableTimeMinutes, setAvailableTimeMinutes] = useState<number>(30);
 
-  const [goals, setGoals] = useState<string[]>(['Get Stronger', 'Improve My Health', 'Build Discipline']);
-  const [equipment, setEquipment] = useState<EquipmentOption[]>(['Bodyweight Only']);
+  const [goals, setGoals] = useState<string[]>([]);
+  const [equipment, setEquipment] = useState<EquipmentOption[]>([]);
   const [fitnessLevel, setFitnessLevel] = useState<FitnessLevelOption>('Beginner');
   const [limitations, setLimitations] = useState('');
 
-  const [wakeTime, setWakeTime] = useState('07:00');
-  const [sleepTime, setSleepTime] = useState('23:00');
-  const [workHours, setWorkHours] = useState('09:00 - 17:00');
-  const [preferredTrainingTime, setPreferredTrainingTime] = useState('18:00');
+  const [wakeTime, setWakeTime] = useState('');
+  const [sleepTime, setSleepTime] = useState('');
+  const [workHours, setWorkHours] = useState('');
+  const [preferredTrainingTime, setPreferredTrainingTime] = useState('');
 
   const toggleGoal = (g: string) => {
     if (goals.includes(g)) {
@@ -128,23 +128,23 @@ export function OnboardingScreen() {
   const handleFinish = async () => {
     setIsSyncing(true);
     const data: OnboardingData = {
-      preferredName,
-      age,
-      country,
-      language,
-      timezone,
-      purpose,
-      lifeSituation,
-      availableTimeMinutes,
-      goals,
-      equipment,
-      fitnessLevel,
+      preferredName: preferredName.trim() || 'Player',
+      age: typeof age === 'number' && age > 0 ? age : 24,
+      country: country.trim() || 'Earth',
+      language: language.trim() || 'English',
+      timezone: timezone.trim() || 'GMT',
+      purpose: purpose || 'Mastering physical and mental potential.',
+      lifeSituation: lifeSituation || 'Working Professional',
+      availableTimeMinutes: availableTimeMinutes || 30,
+      goals: goals.length > 0 ? goals : ['Get Stronger', 'Improve My Health', 'Build Discipline'],
+      equipment: equipment.length > 0 ? equipment : ['Bodyweight Only'],
+      fitnessLevel: fitnessLevel || 'Beginner',
       limitations,
       schedule: {
-        wakeTime,
-        sleepTime,
-        workHours,
-        preferredTrainingTime,
+        wakeTime: wakeTime || '07:00',
+        sleepTime: sleepTime || '23:00',
+        workHours: workHours || '09:00 - 17:00',
+        preferredTrainingTime: preferredTrainingTime || '18:00',
       },
     };
 
@@ -202,6 +202,7 @@ export function OnboardingScreen() {
                     <label className="text-xs text-white/60 block mb-1">Preferred Name</label>
                     <input
                       type="text"
+                      placeholder="Enter your name..."
                       value={preferredName}
                       onChange={e => setPreferredName(e.target.value)}
                       className="w-full bg-white/5 border border-white/15 rounded-xl px-3 py-2 text-sm text-white focus:border-[#CBD5E1] outline-none"
@@ -213,8 +214,9 @@ export function OnboardingScreen() {
                       <label className="text-xs text-white/60 block mb-1">Age</label>
                       <input
                         type="number"
+                        placeholder="e.g. 24"
                         value={age}
-                        onChange={e => setAge(Number(e.target.value))}
+                        onChange={e => setAge(e.target.value ? Number(e.target.value) : '')}
                         className="w-full bg-white/5 border border-white/15 rounded-xl px-3 py-2 text-sm text-white focus:border-[#CBD5E1] outline-none"
                       />
                     </div>
@@ -222,6 +224,7 @@ export function OnboardingScreen() {
                       <label className="text-xs text-white/60 block mb-1">Country</label>
                       <input
                         type="text"
+                        placeholder="e.g. United States, India..."
                         value={country}
                         onChange={e => setCountry(e.target.value)}
                         className="w-full bg-white/5 border border-white/15 rounded-xl px-3 py-2 text-sm text-white focus:border-[#CBD5E1] outline-none"
@@ -234,6 +237,7 @@ export function OnboardingScreen() {
                       <label className="text-xs text-white/60 block mb-1">Language</label>
                       <input
                         type="text"
+                        placeholder="e.g. English..."
                         value={language}
                         onChange={e => setLanguage(e.target.value)}
                         className="w-full bg-white/5 border border-white/15 rounded-xl px-3 py-2 text-sm text-white focus:border-[#CBD5E1] outline-none"
@@ -243,6 +247,7 @@ export function OnboardingScreen() {
                       <label className="text-xs text-white/60 block mb-1">Timezone</label>
                       <input
                         type="text"
+                        placeholder="e.g. GMT-5..."
                         value={timezone}
                         onChange={e => setTimezone(e.target.value)}
                         className="w-full bg-white/5 border border-white/15 rounded-xl px-3 py-2 text-sm text-white focus:border-[#CBD5E1] outline-none"

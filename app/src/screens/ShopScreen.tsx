@@ -1,5 +1,5 @@
 // ============================================================
-// SYSTEM v3 — SYSTEM Repository & Upskills Module
+// SYSTEM — SYSTEM Repository & Upskills Module
 // Unlock system capabilities, hidden attributes & hidden quests
 // ============================================================
 
@@ -14,7 +14,7 @@ import { DEFAULT_UPSKILLS } from '@/engine/gameEngine';
 import type { Upskill } from '@/types';
 
 export function ShopScreen() {
-  const { profile, shopItems, purchaseUpskill } = useGameStore();
+  const { profile, shopItems, purchaseUpskill, purchaseItem } = useGameStore();
   const [selectedUpskill, setSelectedUpskill] = useState<Upskill | null>(null);
   const [activeTab, setActiveTab] = useState<'upskills' | 'utilities'>('upskills');
 
@@ -38,7 +38,7 @@ export function ShopScreen() {
         </div>
       </div>
       <p className="text-sm text-white/40 mb-3">
-        Synchronize new SYSTEM capabilities. Upskills never grant artificial stat boosts — they unlock new statistics, hidden quests, and operational parameters.
+        Synchronize new SYSTEM capabilities or activate operational utilities.
       </p>
 
       {/* Tabs */}
@@ -61,7 +61,7 @@ export function ShopScreen() {
               : 'bg-white/5 border border-transparent text-white/50 hover:bg-white/10'
           }`}
         >
-          <ShieldCheck size={14} className="inline mr-1.5" /> Utilities
+          <ShieldCheck size={14} className="inline mr-1.5" /> Utilities ({shopItems.length})
         </button>
       </div>
 
@@ -157,14 +157,20 @@ export function ShopScreen() {
 
                 <button
                   disabled={!canAfford}
-                  className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  onClick={() => {
+                    if (canAfford) {
+                      playButtonPress();
+                      purchaseItem(item.id);
+                    }
+                  }}
+                  className={`flex items-center gap-1 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all btn-press ${
                     canAfford
                       ? 'bg-[#EAB308]/15 hover:bg-[#EAB308]/25 text-[#EAB308] border border-[#EAB308]/30'
                       : 'bg-white/5 text-white/30 cursor-not-allowed'
                   }`}
                 >
                   <Coins size={12} />
-                  {item.cost}
+                  {item.cost} Coins
                 </button>
               </motion.div>
             );

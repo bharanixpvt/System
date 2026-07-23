@@ -28,7 +28,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="flex items-center justify-between max-w-lg mx-auto">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-[#CBD5E1] animate-pulse" />
-            <span className="system-text text-[#CBD5E1]">SYSTEM OPERATING v3.0</span>
+            <span className="system-text text-[#CBD5E1]">SYSTEM OPERATING SYSTEM</span>
           </div>
           <div className="flex items-center gap-3">
             <XPIndicator />
