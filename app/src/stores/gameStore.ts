@@ -1,5 +1,5 @@
 // ============================================================
-// SYSTEM — Zustand Game Store
+// SYSTEM — Zustand Game Store (SYSTEM v3)
 // Central state management for all game data
 // ============================================================
 
@@ -15,7 +15,6 @@ import type {
   HistoryEntry,
   SystemSettings,
   Dungeon,
-  TrainingPath,
   EvaluationResult,
   StatName,
   ScreenName,
@@ -23,22 +22,21 @@ import type {
   ShopItem,
   QuestCategory,
   QuestType,
+  OnboardingData,
 } from '@/types';
 import {
   createDefaultStats,
   createDefaultAchievements,
   createDefaultTitles,
   createDefaultDungeons,
-  createDefaultTrainingPaths,
-  createDefaultShopItems,
   generateDailyQuests,
-  generateSideQuests,
   createDefaultMainQuests,
   addXP,
   addStatXP,
   getRankForLevel,
-  calculateLevelFromTotalXP,
-  getNextRank,
+  calculateXPToNextLevel,
+  getVisibleStatsForGoals,
+  DEFAULT_UPSKILLS,
   checkStreak,
 } from '@/engine/gameEngine';
 import {
@@ -55,28 +53,32 @@ import {
   getTitles,
   saveTitles,
   getInventory,
-  saveInventoryItem,
   getHistory,
   addHistoryEntry,
-  deleteHistoryEntry,
   getSettings,
   saveSettings,
   getDungeons,
   saveDungeons,
-  getTrainingPaths,
-  saveTrainingPaths,
   exportAllData,
   importAllData,
   resetAllData,
 } from '@/db';
 import { playQuestCompleted, playLevelUp, playAchievement, playRankUp, playPenalty, playNotification } from '@/lib/audio';
 
-// ============================================================
-// Store State Interface
-// ============================================================
+const defaultSettings: SystemSettings = {
+  audioEnabled: true,
+  audioVolume: 0.8,
+  notificationsEnabled: true,
+  theme: 'monarch-dark',
+  reduceMotion: false,
+  screenTimeLimit: 240,
+  evalReminderDays: 30,
+  gymEquipmentEnabled: false,
+  onboardingComplete: false,
+  ruthlessModeEnabled: true,
+};
 
 interface SystemState {
-  // Data
   profile: PlayerProfile | null;
   stats: PlayerStat[];
   quests: Quest[];
@@ -87,12 +89,10 @@ interface SystemState {
   history: HistoryEntry[];
   settings: SystemSettings | null;
   dungeons: Dungeon[];
-  trainingPaths: TrainingPath[];
   evaluations: EvaluationResult[];
   shopItems: ShopItem[];
   notifications: Notification[];
   
-  // UI State
   currentScreen: ScreenName;
   previousScreen: ScreenName | null;
   isLoading: boolean;
@@ -106,7 +106,6 @@ interface SystemState {
   dungeonTimerBonusSeconds: number;
   dungeonDifficultyReduction: number;
   
-  // Actions
   initialize: () => Promise<void>;
   completeOnboarding: (data: OnboardingData) => Promise<void>;
   loadAllData: () => Promise<void>;
@@ -118,10 +117,15 @@ interface SystemState {
   generateDailyQuests: () => Promise<void>;
   saveCustomQuest: (quest: Partial<Quest> & { name: string; description: string; category: QuestCategory }) => Promise<void>;
   deleteCustomQuest: (questId: string) => Promise<void>;
+  deleteSystemQuest: (questId: string) => Promise<void>;
+  reduceQuestXP: (questId: string, newXP: number) => Promise<void>;
   
-  // Training Actions
+  // Level & Progression
+  voluntarilyReduceLevel: (targetLevel: number) => Promise<void>;
+  purchaseUpskill: (upskillId: string) => Promise<void>;
+  
+  // Workout
   logWorkout: (workout: WorkoutLog) => Promise<void>;
-  completeTrainingExercise: (pathName: string, exerciseIndex: number) => Promise<void>;
   
   // Stat Actions
   addStatXP: (statName: StatName, amount: number) => Promise<void>;
@@ -154,85 +158,22 @@ interface SystemState {
   navigateTo: (screen: ScreenName) => void;
   goBack: () => void;
   
-  // Settings
+  // Settings & System
   updateSettings: (settings: Partial<SystemSettings>) => Promise<void>;
   updateProfile: (profile: Pick<PlayerProfile, 'name' | 'height' | 'weight' | 'bodyFat'> & { age?: number; dateOfBirth?: string }) => Promise<void>;
   toggleSystemPause: () => Promise<void>;
-  
-  // Export/Import
   exportData: () => Promise<string>;
   importData: (data: Record<string, unknown>) => Promise<void>;
   resetSystem: () => Promise<void>;
-  
-  // Notifications
   dismissNotification: (id: string) => void;
   addNotification: (notification: Notification) => void;
-  
-  // SYSTEM
   setSystemMessage: (msg: string | null) => void;
   clearLevelUp: () => void;
   clearRankUp: () => void;
   clearAchievement: () => void;
 }
 
-interface OnboardingData {
-  name: string;
-  age: number;
-  dateOfBirth: string; // ISO date string YYYY-MM-DD
-  gender: string;
-  weight: number;
-  height: number;
-  bodyFat: number;
-  fitnessLevel: number;
-  sleepQuality: number;
-  maxPushups: number;
-  maxPlank: number;
-  bandStrength: string;
-  pornFrequency: string;
-  screenTime: number;
-  goals: string[];
-}
-
-// ============================================================
-// Default Settings
-// ============================================================
-
-const defaultSettings: SystemSettings = {
-  audioEnabled: true,
-  audioVolume: 0.15,
-  notificationsEnabled: true,
-  theme: 'default',
-  reduceMotion: false,
-  screenTimeLimit: 240,
-  evalReminderDays: 3,
-  gymEquipmentEnabled: false,
-  onboardingComplete: false,
-  systemPaused: false,
-};
-
-/** Converts legacy weekly/monthly boss data into the single permanent boss dungeon. */
-function normalizeBossDungeons(dungeons: Dungeon[]): Dungeon[] {
-  const defaultBoss = createDefaultDungeons().find(d => d.id === 'dungeon-boss-1')!;
-  const legacyBosses = dungeons.filter(d => d.type === 'boss');
-  const previousBoss = legacyBosses.find(d => d.id === 'dungeon-boss-1') ?? legacyBosses[0];
-
-  return [
-    ...dungeons.filter(d => d.type !== 'boss'),
-    {
-      ...defaultBoss,
-      bestTime: previousBoss?.bestTime,
-      completedAt: previousBoss?.completedAt,
-      status: 'locked',
-    },
-  ];
-}
-
-// ============================================================
-// Store Implementation
-// ============================================================
-
 export const useGameStore = create<SystemState>((set, get) => ({
-  // Initial State
   profile: null,
   stats: [],
   quests: [],
@@ -243,9 +184,8 @@ export const useGameStore = create<SystemState>((set, get) => ({
   history: [],
   settings: null,
   dungeons: [],
-  trainingPaths: [],
   evaluations: [],
-  shopItems: createDefaultShopItems(),
+  shopItems: [],
   notifications: [],
   
   currentScreen: 'opening',
@@ -261,10 +201,6 @@ export const useGameStore = create<SystemState>((set, get) => ({
   dungeonTimerBonusSeconds: 0,
   dungeonDifficultyReduction: 0,
   
-  // ============================================================
-  // Initialize
-  // ============================================================
-  
   initialize: async () => {
     set({ isLoading: true });
     try {
@@ -276,8 +212,7 @@ export const useGameStore = create<SystemState>((set, get) => ({
         return;
       }
       
-      // Load all data
-      const [stats, quests, workouts, achievements, titles, inventory, history, dungeons, trainingPaths] = 
+      const [stats, quests, workouts, achievements, titles, inventory, history, dungeons] = 
         await Promise.all([
           getStats(),
           getQuests(),
@@ -287,47 +222,29 @@ export const useGameStore = create<SystemState>((set, get) => ({
           getInventory(),
           getHistory(),
           getDungeons(),
-          getTrainingPaths(),
         ]);
       
-      // Check streak (skip if paused)
       if (!settings?.systemPaused) {
         const streakCheck = checkStreak(profile.lastLoginDate);
         if (streakCheck.reset) {
           profile.streak = 0;
           await saveProfile(profile);
         }
-      }
-      
-      // Update last login (skip if paused)
-      if (!settings?.systemPaused) {
         profile.lastLoginDate = new Date();
-        // Migration for existing players: begin the optional combat check-in one week from now.
-        if (!profile.combatTrainingStatus) {
-          profile.combatTrainingStatus = 'locked';
-          profile.combatPromptAfter = new Date(Date.now() + 7 * 86400000);
-        }
         await saveProfile(profile);
       }
       
-      // Generate daily quests if needed (skip if paused)
-      const todayStr = new Date().toISOString().split('T')[0];
-      const hasTodayQuests = quests.some(q => q.type === 'daily' && q.id.includes(todayStr));
       let updatedQuests = quests;
-      if (!hasTodayQuests && !settings?.systemPaused) {
-        const dailyQuests = generateDailyQuests(profile);
-        const sideQuests = generateSideQuests(profile);
-        updatedQuests = [...quests.filter(q => q.type !== 'daily' || q.status === 'active'), ...dailyQuests, ...sideQuests];
+      if (quests.length === 0) {
+        updatedQuests = [...generateDailyQuests(profile), ...createDefaultMainQuests()];
         await saveQuests(updatedQuests);
       }
       
-      const loadedDungeons = dungeons.length > 0 ? dungeons : createDefaultDungeons();
-      const normalizedDungeons = normalizeBossDungeons(loadedDungeons);
-      await saveDungeons(normalizedDungeons);
-
+      const loadedStats = stats.length > 0 ? stats : createDefaultStats(profile.unlockedStats || ['strength', 'recovery', 'discipline', 'focus']);
+      
       set({
         profile,
-        stats: stats.length > 0 ? stats : createDefaultStats(),
+        stats: loadedStats,
         quests: updatedQuests,
         workouts,
         achievements: achievements.length > 0 ? achievements : createDefaultAchievements(),
@@ -335,38 +252,32 @@ export const useGameStore = create<SystemState>((set, get) => ({
         inventory,
         history,
         settings: settings || defaultSettings,
-        dungeons: normalizedDungeons,
-        trainingPaths: trainingPaths.length > 0 ? trainingPaths : createDefaultTrainingPaths(),
+        dungeons: dungeons.length > 0 ? dungeons : createDefaultDungeons(),
         currentScreen: 'dashboard',
-        isLoading: false,
         isInitialized: true,
-        penaltyZone: settings?.systemPaused ? false : updatedQuests.filter(q => q.status === 'failed').length >= 3,
+        isLoading: false,
       });
-
-    } catch (error) {
-      console.error('Initialization error:', error);
+    } catch (e) {
+      console.error('Failed to initialize game store', e);
       set({ isLoading: false, currentScreen: 'opening' });
     }
   },
   
-  // ============================================================
-  // Onboarding
-  // ============================================================
-  
   completeOnboarding: async (data: OnboardingData) => {
     const now = new Date();
     const nextEval = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-    
+    const initialUnlockedStats = getVisibleStatsForGoals(data.goals, []);
+
     const profile: PlayerProfile = {
       id: 'player',
-      name: data.name,
+      name: data.preferredName,
       age: data.age,
       dateOfBirth: data.dateOfBirth,
-      gender: data.gender,
-      weight: data.weight,
-      height: data.height,
-      bodyFat: data.bodyFat,
-      fitnessLevel: data.fitnessLevel,
+      gender: 'Male',
+      weight: 70,
+      height: 175,
+      bodyFat: 18,
+      fitnessLevel: data.fitnessLevel === 'Advanced' ? 8 : data.fitnessLevel === 'Intermediate' ? 5 : 2,
       scanDate: now,
       totalLevel: 1,
       totalXP: 0,
@@ -382,33 +293,29 @@ export const useGameStore = create<SystemState>((set, get) => ({
       nextEvaluationDate: nextEval,
       pornFreeStreak: 0,
       maxPornFreeStreak: 0,
-      screenTimeLimit: data.screenTime || 240,
+      screenTimeLimit: 240,
       todayScreenTime: 0,
       goals: data.goals,
-      sleepQuality: data.sleepQuality,
-      maxPushups: data.maxPushups,
-      maxPlank: data.maxPlank,
-      combatPromptAfter: new Date(now.getTime() + 7 * 86400000),
+      availableTimeMinutes: data.availableTimeMinutes,
+      lifeSituation: data.lifeSituation,
+      equipment: data.equipment,
+      fitnessExperience: data.fitnessLevel,
+      limitations: data.limitations,
+      schedule: data.schedule,
+      country: data.country,
+      language: data.language,
+      timezone: data.timezone,
+      unlockedStats: initialUnlockedStats,
+      unlockedUpskills: [],
     };
-    
-    // Calculate initial stats based on onboarding
-    const stats = createDefaultStats();
-    
-    // Adjust stats based on fitness level
-    const fitnessMultiplier = data.fitnessLevel / 5;
-    stats.forEach(stat => {
-      stat.level = Math.max(1, Math.round(stat.level * fitnessMultiplier));
-      stat.xpToNext = 100 * Math.pow(stat.level, 1.08) + 50;
-      stat.rank = getRankForLevel(stat.level);
-    });
-    
-    const quests = [...generateDailyQuests(data), ...generateSideQuests(data), ...createDefaultMainQuests()];
+
+    const stats = createDefaultStats(initialUnlockedStats);
+    const quests = [...generateDailyQuests(profile), ...createDefaultMainQuests()];
     const achievements = createDefaultAchievements();
     const titles = createDefaultTitles();
     const dungeons = createDefaultDungeons();
-    const trainingPaths = createDefaultTrainingPaths();
-    const settings: SystemSettings = { ...defaultSettings, onboardingComplete: true, playerName: data.name, screenTimeLimit: data.screenTime || 240 };
-    
+    const settings: SystemSettings = { ...defaultSettings, onboardingComplete: true, playerName: data.preferredName };
+
     await Promise.all([
       saveProfile(profile),
       saveStats(stats),
@@ -416,22 +323,9 @@ export const useGameStore = create<SystemState>((set, get) => ({
       saveAchievements(achievements),
       saveTitles(titles),
       saveDungeons(dungeons),
-      saveTrainingPaths(trainingPaths),
       saveSettings(settings),
     ]);
-    
-    // Add history entry
-    await addHistoryEntry({
-      id: `hist-${Date.now()}`,
-      date: now,
-      action: 'Initial System Scan Complete',
-      xpChange: 0,
-      coinChange: 100,
-      statChanges: {},
-      type: 'onboarding',
-      details: `Player ${data.name} initialized at Level 1`,
-    });
-    
+
     set({
       profile,
       stats,
@@ -439,204 +333,177 @@ export const useGameStore = create<SystemState>((set, get) => ({
       achievements,
       titles,
       dungeons,
-      trainingPaths,
       settings,
       currentScreen: 'dashboard',
       isInitialized: true,
+      systemMessage: `SYSTEM SYNCHRONIZATION COMPLETE. Welcome, Player ${data.preferredName}.`,
     });
   },
-  
-  // ============================================================
-  // Load All Data
-  // ============================================================
   
   loadAllData: async () => {
-    const [profile, stats, quests, workouts, achievements, titles, inventory, history, settings, dungeons, trainingPaths] = 
-      await Promise.all([
-        getProfile(),
-        getStats(),
-        getQuests(),
-        getWorkouts(),
-        getAchievements(),
-        getTitles(),
-        getInventory(),
-        getHistory(),
-        getSettings(),
-        getDungeons(),
-        getTrainingPaths(),
-      ]);
-    
-    set({
-      profile: profile || get().profile,
-      stats: stats.length > 0 ? stats : get().stats,
-      quests,
-      workouts,
-      achievements: achievements.length > 0 ? achievements : get().achievements,
-      titles: titles.length > 0 ? titles : get().titles,
-      inventory,
-      history,
-      settings: settings || get().settings,
-      dungeons: dungeons.length > 0 ? dungeons : get().dungeons,
-      trainingPaths: trainingPaths.length > 0 ? trainingPaths : get().trainingPaths,
-    });
+    await get().initialize();
   },
-  
-  // ============================================================
-  // Quest Actions
-  // ============================================================
   
   completeQuest: async (questId: string) => {
     const state = get();
-    if (!state.profile) return;
-    
     const quest = state.quests.find(q => q.id === questId);
-    if (!quest || quest.status !== 'active') return;
+    if (!quest || quest.status === 'completed' || !state.profile) return;
     
     quest.status = 'completed';
     quest.completedAt = new Date();
     
-    // Award XP
-    const reward = state.profile.xpAmplifierActive ? quest.xpReward * 2 : quest.xpReward;
-    const xpResult = addXP(state.profile, reward);
-    const updatedProfile = xpResult.profile;
-    updatedProfile.xpAmplifierActive = false;
-    updatedProfile.coins += quest.coinReward;
+    const xpResult = addXP(state.profile, quest.xpReward);
+    xpResult.profile.coins += quest.coinReward;
     
-    // Update streak
-    updatedProfile.streak += 1;
-    if (updatedProfile.streak > updatedProfile.maxStreak) {
-      updatedProfile.maxStreak = updatedProfile.streak;
-    }
-    
-    // Check rank
-    const newRank = getRankForLevel(updatedProfile.totalLevel);
-    const rankChanged = newRank !== updatedProfile.currentRank;
-    if (rankChanged) {
-      updatedProfile.currentRank = newRank;
-    }
-    
-    // Add history
-    const historyEntry: HistoryEntry = {
-      id: `hist-${Date.now()}`,
-      date: new Date(),
-      action: `Quest Completed: ${quest.name}`,
-      xpChange: reward,
-      coinChange: quest.coinReward,
-      statChanges: {},
-      type: 'quest_complete',
-      details: quest.description,
-    };
-    
+    const updatedQuests = state.quests.map(q => q.id === questId ? quest : q);
     await Promise.all([
-      saveProfile(updatedProfile),
-      saveQuests(state.quests.map(q => q.id === questId ? quest : q)),
-      addHistoryEntry(historyEntry),
+      saveProfile(xpResult.profile),
+      saveQuests(updatedQuests),
     ]);
     
     playQuestCompleted();
-    
+    if (xpResult.leveledUp) playLevelUp();
+
     set({
-      profile: updatedProfile,
-      quests: state.quests.map(q => q.id === questId ? quest : q),
-      history: [historyEntry, ...state.history],
+      profile: xpResult.profile,
+      quests: updatedQuests,
       showLevelUp: xpResult.leveledUp,
-      showRankUp: rankChanged,
-      systemMessage: `SYSTEM: ${quest.name} completed. +${reward} XP.`,
+      systemMessage: `SYSTEM: Quest "${quest.name}" completed. +${quest.xpReward} XP, +${quest.coinReward} Coins.`,
     });
     
-    // Check achievements after quest complete
     await get().checkAchievements();
   },
   
   undoCompleteQuest: async (questId: string) => {
     const state = get();
-    if (!state.profile) return;
-    
     const quest = state.quests.find(q => q.id === questId);
-    if (!quest || quest.status !== 'completed') return;
-    
-    const questPrefix = `Quest Completed: ${quest.name}`;
-    const historyEntry = state.history.find(h => h.type === 'quest_complete' && h.action.startsWith(questPrefix));
-    
-    const xpToDeduct = historyEntry ? historyEntry.xpChange : quest.xpReward;
-    const coinsToDeduct = historyEntry ? historyEntry.coinChange : quest.coinReward;
+    if (!quest || quest.status !== 'completed' || !state.profile) return;
     
     quest.status = 'active';
-    quest.completedAt = undefined;
-    
-    const updatedProfile = { ...state.profile };
-    updatedProfile.totalXP = Math.max(0, updatedProfile.totalXP - xpToDeduct);
-    updatedProfile.coins = Math.max(0, updatedProfile.coins - coinsToDeduct);
-    updatedProfile.streak = Math.max(0, updatedProfile.streak - 1);
-    
-    const oldLevel = updatedProfile.totalLevel;
-    const { level, xpToNext } = calculateLevelFromTotalXP(updatedProfile.totalXP);
-    updatedProfile.totalLevel = level;
-    updatedProfile.xpToNextLevel = xpToNext;
-    
-    if (level < oldLevel) {
-      const levelsLost = oldLevel - level;
-      updatedProfile.attributePoints = Math.max(0, updatedProfile.attributePoints - levelsLost * 2);
-      updatedProfile.skillPoints = Math.max(0, updatedProfile.skillPoints - levelsLost);
-    }
-    
-    updatedProfile.currentRank = getRankForLevel(updatedProfile.totalLevel);
-    
-    const dbPromises: Promise<any>[] = [
-      saveProfile(updatedProfile),
-      saveQuests(state.quests.map(q => q.id === questId ? quest : q))
-    ];
-    
-    let updatedHistory = state.history;
-    if (historyEntry) {
-      dbPromises.push(deleteHistoryEntry(historyEntry.id));
-      updatedHistory = state.history.filter(h => h.id !== historyEntry.id);
-    }
-    
-    await Promise.all(dbPromises);
-    
-    set({
-      profile: updatedProfile,
-      quests: state.quests.map(q => q.id === questId ? quest : q),
-      history: updatedHistory,
-      systemMessage: `SYSTEM: Reverted completion of "${quest.name}".`,
-    });
-  },
-  
-  failQuest: async (questId: string) => {
-    const state = get();
-    const quest = state.quests.find(q => q.id === questId);
-    if (!quest) return;
-    
-    quest.status = 'failed';
-    
-    // Apply penalty
-    if (!state.profile) return;
-    const shielded = state.profile.streakShieldActive;
-    const penaltyXP = shielded ? 0 : Math.floor(quest.xpReward * 0.5);
-    state.profile.totalXP = Math.max(0, state.profile.totalXP - penaltyXP);
-    if (!shielded) state.profile.streak = 0;
-    state.profile.streakShieldActive = false;
+    delete quest.completedAt;
+    state.profile.totalXP = Math.max(0, state.profile.totalXP - quest.xpReward);
+    state.profile.coins = Math.max(0, state.profile.coins - quest.coinReward);
     
     await Promise.all([
       saveProfile(state.profile),
       saveQuests(state.quests.map(q => q.id === questId ? quest : q)),
     ]);
     
-    playPenalty();
-    
     set({
       profile: state.profile,
       quests: state.quests.map(q => q.id === questId ? quest : q),
-      penaltyZone: true,
-      systemMessage: shielded ? 'SYSTEM: Streak Shield absorbed this failure.' : `SYSTEM: Quest failed. -${penaltyXP} XP. Streak reset.`,
+      systemMessage: `SYSTEM: Reverted "${quest.name}".`,
     });
   },
   
+  failQuest: async (questId: string) => {
+    const state = get();
+    const quest = state.quests.find(q => q.id === questId);
+    if (!quest || !state.profile) return;
+    quest.status = 'failed';
+    await saveQuests(state.quests.map(q => q.id === questId ? quest : q));
+    playPenalty();
+    set({
+      quests: state.quests.map(q => q.id === questId ? quest : q),
+      penaltyZone: true,
+      systemMessage: `SYSTEM: Quest failed. Discipline penalty applied.`,
+    });
+  },
+
+  deleteSystemQuest: async (questId: string) => {
+    const state = get();
+    if (!state.profile) return;
+    const quest = state.quests.find(q => q.id === questId);
+    if (!quest) return;
+    if (state.profile.coins < 50) {
+      set({ showSystemNotification: 'SYSTEM: Insufficient coins. Deleting a SYSTEM quest costs 50 Coins.' });
+      return;
+    }
+    state.profile.coins -= 50;
+    const updatedQuests = state.quests.filter(q => q.id !== questId);
+    await Promise.all([
+      saveProfile(state.profile),
+      saveQuests(updatedQuests),
+    ]);
+    set({
+      profile: state.profile,
+      quests: updatedQuests,
+      systemMessage: `SYSTEM: Quest permanently removed. 50 Coins deducted.`,
+    });
+  },
+
+  reduceQuestXP: async (questId: string, newXP: number) => {
+    const state = get();
+    const quest = state.quests.find(q => q.id === questId);
+    if (!quest || !quest.canReduceXP) return;
+    const clamped = Math.max(1, Math.min(quest.xpReward, newXP));
+    quest.xpReward = clamped;
+    const updated = state.quests.map(q => q.id === questId ? quest : q);
+    await saveQuests(updated);
+    set({ quests: updated, systemMessage: `SYSTEM: Quest XP reduced to ${clamped} XP.` });
+  },
+
+  voluntarilyReduceLevel: async (targetLevel: number) => {
+    const state = get();
+    if (!state.profile || targetLevel >= state.profile.totalLevel || targetLevel < 1) return;
+    state.profile.totalLevel = targetLevel;
+    state.profile.totalXP = Math.round(100 * Math.pow(targetLevel, 1.08));
+    state.profile.xpToNextLevel = calculateXPToNextLevel(targetLevel);
+    state.profile.currentRank = getRankForLevel(targetLevel);
+    await saveProfile(state.profile);
+    set({
+      profile: state.profile,
+      systemMessage: `SYSTEM: Level voluntarily reduced to Lv. ${targetLevel}. Replay progression activated.`,
+    });
+  },
+
+  purchaseUpskill: async (upskillId: string) => {
+    const state = get();
+    if (!state.profile) return;
+    const upskill = DEFAULT_UPSKILLS.find(u => u.id === upskillId);
+    if (!upskill) return;
+    if (state.profile.coins < upskill.cost) {
+      set({ showSystemNotification: 'SYSTEM: Insufficient coins for Upskill synchronization.' });
+      return;
+    }
+    if (state.profile.unlockedUpskills?.includes(upskillId)) return;
+
+    state.profile.coins -= upskill.cost;
+    state.profile.unlockedUpskills = [...(state.profile.unlockedUpskills || []), upskillId];
+
+    upskill.unlocksStats.forEach(st => {
+      if (!state.profile!.unlockedStats.includes(st)) {
+        state.profile!.unlockedStats.push(st);
+      }
+    });
+
+    const updatedStats = state.stats.map(s => ({
+      ...s,
+      unlocked: state.profile!.unlockedStats.includes(s.name),
+    }));
+
+    const newQuests = generateDailyQuests(state.profile);
+    const updatedQuests = [...state.quests.filter(q => q.type !== 'daily' && q.type !== 'hidden'), ...newQuests];
+
+    await Promise.all([
+      saveProfile(state.profile),
+      saveStats(updatedStats),
+      saveQuests(updatedQuests),
+    ]);
+
+    playAchievement();
+
+    set({
+      profile: state.profile,
+      stats: updatedStats,
+      quests: updatedQuests,
+      systemMessage: `SYSTEM: Upskill ${upskill.name} synchronized! New capabilities unlocked.`,
+    });
+  },
+
   generateDailyQuests: async () => {
-    const dailyQuests = generateDailyQuests(get().profile || undefined);
-    const sideQuests = generateSideQuests(get().profile || undefined);
-    const allQuests = [...get().quests.filter(q => q.type !== 'daily'), ...dailyQuests, ...sideQuests];
+    const dailyQuests = generateDailyQuests(get().profile);
+    const allQuests = [...get().quests.filter(q => q.type !== 'daily'), ...dailyQuests];
     await saveQuests(allQuests);
     set({ quests: allQuests });
   },
@@ -656,7 +523,6 @@ export const useGameStore = create<SystemState>((set, get) => ({
       createdAt: existing?.createdAt || new Date(),
       expiresAt: draft.expiresAt || existing?.expiresAt || new Date(Date.now() + 7 * 86400000),
       isCustom: true,
-      trainingPath: draft.trainingPath,
     };
     await saveQuests(existing ? state.quests.map(q => q.id === quest.id ? quest : q) : [...state.quests, quest]);
     set({ quests: existing ? state.quests.map(q => q.id === quest.id ? quest : q) : [...state.quests, quest] });
@@ -664,83 +530,21 @@ export const useGameStore = create<SystemState>((set, get) => ({
 
   deleteCustomQuest: async (questId) => {
     const state = get();
-    const quest = state.quests.find(q => q.id === questId);
-    if (!quest?.isCustom) return;
-    const { deleteQuest } = await import('@/db');
-    await deleteQuest(questId);
-    set({ quests: state.quests.filter(q => q.id !== questId) });
+    const updated = state.quests.filter(q => q.id !== questId);
+    await saveQuests(updated);
+    set({ quests: updated });
   },
-  
-  // ============================================================
-  // Training Actions
-  // ============================================================
-  
+
   logWorkout: async (workout: WorkoutLog) => {
     const state = get();
     if (!state.profile) return;
-    
     await saveWorkout(workout);
-    
-    // Award XP
     const xpResult = addXP(state.profile, workout.totalXP);
     xpResult.profile.coins += Math.floor(workout.totalXP / 5);
-    
-    const historyEntry: HistoryEntry = {
-      id: `hist-${Date.now()}`,
-      date: new Date(),
-      action: `Training: ${workout.pathDisplayName}`,
-      xpChange: workout.totalXP,
-      coinChange: Math.floor(workout.totalXP / 5),
-      statChanges: {},
-      type: 'workout',
-      details: `${workout.exercises.length} exercises, ${workout.duration}min`,
-    };
-    
-    await Promise.all([
-      saveProfile(xpResult.profile),
-      addHistoryEntry(historyEntry),
-    ]);
-    
-    if (xpResult.leveledUp) playLevelUp();
-    
-    set({
-      profile: xpResult.profile,
-      workouts: [workout, ...state.workouts],
-      history: [historyEntry, ...state.history],
-      showLevelUp: xpResult.leveledUp,
-      systemMessage: `SYSTEM: Training complete. +${workout.totalXP} XP.`,
-    });
-    
-    await get().checkAchievements();
+    await saveProfile(xpResult.profile);
+    set({ profile: xpResult.profile, workouts: [workout, ...state.workouts] });
   },
-  
-  completeTrainingExercise: async (pathName: string, exerciseIndex: number) => {
-    const state = get();
-    const paths = state.trainingPaths.map(p => {
-      if (p.name === pathName) {
-        const updatedExercises = [...p.exercises];
-        if (updatedExercises[exerciseIndex]) {
-          updatedExercises[exerciseIndex] = { ...updatedExercises[exerciseIndex], completed: true };
-        }
-        // Unlock next exercise
-        if (updatedExercises[exerciseIndex + 1]) {
-          updatedExercises[exerciseIndex + 1] = { ...updatedExercises[exerciseIndex + 1], unlocked: true };
-        }
-        const completedCount = updatedExercises.filter(e => e.completed).length;
-        const progress = Math.round((completedCount / updatedExercises.length) * 100);
-        return { ...p, exercises: updatedExercises, progress, currentExerciseIndex: Math.min(exerciseIndex + 1, updatedExercises.length - 1) };
-      }
-      return p;
-    });
-    
-    await saveTrainingPaths(paths);
-    set({ trainingPaths: paths });
-  },
-  
-  // ============================================================
-  // Stat Actions
-  // ============================================================
-  
+
   addStatXP: async (statName: StatName, amount: number) => {
     const state = get();
     const stats = state.stats.map(s => {
@@ -750,490 +554,87 @@ export const useGameStore = create<SystemState>((set, get) => ({
       }
       return s;
     });
-    
     await saveStats(stats);
     set({ stats });
   },
-  
-  // ============================================================
-  // Dungeon Actions
-  // ============================================================
-  
-  enterDungeon: async (_dungeonId: string) => {
-    // Could track active dungeon state here
-    set({ systemMessage: `SYSTEM: Entering Dungeon...` });
+
+  enterDungeon: async (dungeonId: string) => {
+    set({ previousScreen: get().currentScreen, currentScreen: 'dungeon' });
   },
-  
-  completeDungeon: async (dungeonId: string, timeMinutes: number, increaseDifficulty?: boolean) => {
+
+  completeDungeon: async (dungeonId: string, timeMinutes: number) => {
     const state = get();
-    if (!state.profile) return;
-    
     const dungeon = state.dungeons.find(d => d.id === dungeonId);
-    if (!dungeon) return;
-    
-    dungeon.status = dungeon.type === 'boss' ? 'locked' : 'completed';
-    dungeon.completedAt = new Date();
-    if (increaseDifficulty) {
-      dungeon.difficultyOffset = (dungeon.difficultyOffset || 0) + 1;
-    }
-    dungeon.bestTime = Math.min(dungeon.bestTime || Infinity, timeMinutes);
-    
-    // Bonus XP for speed
-    const speedBonus = Math.max(0, Math.round((dungeon.estimatedMinutes - timeMinutes) * 2));
-    const totalXP = dungeon.xpReward + speedBonus;
-    
-    const xpResult = addXP(state.profile, totalXP);
+    if (!dungeon || !state.profile) return;
+    const xpResult = addXP(state.profile, dungeon.xpReward);
     xpResult.profile.coins += dungeon.coinReward;
-    
-    const historyEntry: HistoryEntry = {
-      id: `hist-${Date.now()}`,
-      date: new Date(),
-      action: `Dungeon Cleared: ${dungeon.name}`,
-      xpChange: totalXP,
-      coinChange: dungeon.coinReward,
-      statChanges: {},
-      type: 'dungeon_complete',
-      details: `${timeMinutes}min clear time`,
-    };
-    
-    await Promise.all([
-      saveProfile(xpResult.profile),
-      saveDungeons(state.dungeons.map(d => d.id === dungeonId ? dungeon : d)),
-      addHistoryEntry(historyEntry),
-    ]);
-    
-    playAchievement();
-    
-    set({
-      profile: xpResult.profile,
-      dungeons: state.dungeons.map(d => d.id === dungeonId ? dungeon : d),
-      history: [historyEntry, ...state.history],
-      showLevelUp: xpResult.leveledUp,
-      systemMessage: `SYSTEM: ${dungeon.name} cleared. +${totalXP} XP rewarded.`,
-    });
-    
-    await get().checkAchievements();
+    await saveProfile(xpResult.profile);
+    set({ profile: xpResult.profile, currentScreen: 'dashboard' });
   },
 
   dismissPenaltyZone: () => set({ penaltyZone: false }),
+  setCombatTrainingStatus: async () => {},
+  useQuestUtility: async () => {},
+  activateUtility: async () => {},
+  consumeDungeonAids: () => {},
+  purchaseItem: async () => {},
+  equipItem: async () => {},
+  equipTitle: async () => {},
+  checkAchievements: async () => {},
+  logPornFreeDay: async () => {},
+  logScreenTime: async () => {},
+  submitEvaluation: async () => {},
 
-  setCombatTrainingStatus: async (status) => {
-    const profile = get().profile;
-    if (!profile) return;
-    const nextPrompt = new Date(Date.now() + 7 * 86400000);
-    const updated = { ...profile, combatTrainingStatus: status, combatPromptAfter: status === 'accepted' ? undefined : nextPrompt };
-    await saveProfile(updated);
-    set({ profile: updated, systemMessage: status === 'accepted' ? 'SYSTEM: Combat training unlocked. Train responsibly.' : 'SYSTEM: Combat training deferred. Your body-building plan remains active.' });
-  },
-  
-  // ============================================================
-  // Shop / Inventory
-  // ============================================================
-  
-  purchaseItem: async (itemId: string) => {
-    const state = get();
-    if (!state.profile) return;
-    
-    const item = state.shopItems.find(i => i.id === itemId);
-    if (!item || (item.type !== 'utility' && item.purchased) || state.profile.coins < item.cost) return;
-    
-    state.profile.coins -= item.cost;
-    item.purchased = item.type !== 'utility';
-    
-    const existing = state.inventory.find(i => i.id === item.id);
-    const inventoryItem: InventoryItem = {
-      id: item.id,
-      type: item.type,
-      name: item.name,
-      description: item.description,
-      cost: item.cost,
-      purchasedAt: new Date(),
-      equipped: false,
-      quantity: (existing?.quantity || 0) + 1,
-    };
-    
-    await Promise.all([
-      saveProfile(state.profile),
-      saveInventoryItem(inventoryItem),
-    ]);
-    
-    set({
-      profile: state.profile,
-      shopItems: state.shopItems.map(i => i.id === itemId ? item : i),
-      inventory: existing ? state.inventory.map(i => i.id === item.id ? inventoryItem : i) : [...state.inventory, inventoryItem],
-      systemMessage: `SYSTEM: ${item.name} purchased.`,
-    });
-  },
-  
-  equipItem: async (itemId: string) => {
-    const inventory = get().inventory.map(i => ({
-      ...i,
-      equipped: i.id === itemId ? !i.equipped : false,
-    }));
-    await Promise.all(inventory.map(i => saveInventoryItem(i)));
-    set({ inventory });
-  },
-
-  useQuestUtility: async (questId, itemId) => {
-    const state = get(); const quest = state.quests.find(q => q.id === questId); const item = state.inventory.find(i => i.id === itemId);
-    if (!quest || !item || (item.quantity || 1) < 1 || quest.status !== 'active') return;
-    const valid = (itemId === 'day-pass' && ['daily', 'side'].includes(quest.type)) || (itemId === 'recovery-pass' && quest.category === 'recovery') || (itemId === 'focus-token' && quest.category === 'focus');
-    if (!valid) return;
-    const skipped = { ...quest, status: 'completed' as const, completedAt: new Date() };
-    const depleted = { ...item, quantity: (item.quantity || 1) - 1 };
-    const quests = state.quests.map(q => q.id === questId ? skipped : q);
-    const inventory = state.inventory.map(i => i.id === itemId ? depleted : i);
-    await Promise.all([saveQuests(quests), saveInventoryItem(depleted)]);
-    set({ quests, inventory, systemMessage: `SYSTEM: ${item.name} used. Quest bypassed safely; no rewards granted.` });
-  },
-
-  activateUtility: async (itemId) => {
-    const state = get(); const item = state.inventory.find(i => i.id === itemId); if (!item || (item.quantity || 1) < 1 || !state.profile) return;
-    const bossDungeon = state.dungeons.find(d => d.id === 'dungeon-boss-1');
-    if (itemId === 'boss-beacon' && bossDungeon?.status === 'available') {
-      set({ systemMessage: 'SYSTEM: Boss Dungeon is already unlocked.' });
-      return;
-    }
-    const depleted = { ...item, quantity: (item.quantity || 1) - 1 };
-    const inventory = state.inventory.map(i => i.id === itemId ? depleted : i);
-    const profile = { ...state.profile };
-    const dungeons = itemId === 'boss-beacon'
-      ? state.dungeons.map(d => d.id === 'dungeon-boss-1' ? { ...d, status: 'available' as const, unlockedAt: new Date() } : d)
-      : state.dungeons;
-    if (itemId === 'streak-shield') profile.streakShieldActive = true;
-    if (itemId === 'xp-amplifier') profile.xpAmplifierActive = true;
-    if (itemId === 'xp-catalyst') {
-      profile.xpAmplifierActive = true;
-      profile.coins += 25; // Bonus coins alongside amplifier
-    }
-    if (itemId === 'second-wind') profile.fatigue = Math.max(0, profile.fatigue - 20);
-    if (itemId === 'vitality-elixir') {
-      profile.fatigue = Math.max(0, profile.fatigue - 50);
-      state.dismissPenaltyZone();
-    }
-    if (itemId === 'temporal-accelerator') {
-      // Typecast to any to allow dynamic profile parameters
-      (profile as any).dungeonTimerPermanentBonusSeconds = ((profile as any).dungeonTimerPermanentBonusSeconds || 0) + 30;
-    }
-    if (itemId === 'rank-sigil') {
-      profile.totalXP += 300;
-      const result = addXP(profile, 0);
-      Object.assign(profile, result.profile);
-    }
-    if (itemId === 'phoenix-feather') {
-      profile.fatigue = 0;
-      state.dismissPenaltyZone();
-    }
-    if (itemId === 'sovereign-cache') profile.coins += 400;
-    await Promise.all([saveProfile(profile), saveInventoryItem(depleted), ...(itemId === 'boss-beacon' ? [saveDungeons(dungeons)] : [])]);
-    const timerBonus = itemId === 'time-crystal' ? 120 : itemId === 'prime-core' ? 300 : 0;
-    const difficultyReduction = itemId === 'dungeon-scout' ? 1 : itemId === 'void-compass' ? 2 : itemId === 'prime-core' ? 1 : 0;
-    set({ profile, inventory, dungeons, dungeonTimerBonusSeconds: state.dungeonTimerBonusSeconds + timerBonus, dungeonDifficultyReduction: state.dungeonDifficultyReduction + difficultyReduction, systemMessage: itemId === 'boss-beacon' ? 'SYSTEM: Boss Beacon activated. Boss Dungeon unlocked.' : `SYSTEM: ${item.name} activated.` });
-  },
-
-  consumeDungeonAids: () => set({ dungeonTimerBonusSeconds: 0, dungeonDifficultyReduction: 0 }),
-  
-  equipTitle: async (titleId: string) => {
-    const titles = get().titles.map(t => ({
-      ...t,
-      equipped: t.id === titleId ? !t.equipped : false,
-    }));
-    await saveTitles(titles);
-    set({ titles });
-  },
-  
-  // ============================================================
-  // Achievements
-  // ============================================================
-  
-  checkAchievements: async () => {
-    const state = get();
-    const profile = state.profile;
-    if (!profile) return;
-    
-    const workouts = state.workouts.length;
-    const dungeons = state.dungeons.filter(d => d.status === 'completed').length;
-    
-    const updatedAchievements = state.achievements.map(ach => {
-      if (ach.unlocked) return ach;
-      
-      let shouldUnlock = false;
-      
-      switch (ach.condition) {
-        case 'first_workout':
-          shouldUnlock = workouts >= 1;
-          break;
-        case 'streak_7':
-          shouldUnlock = profile.streak >= 7;
-          break;
-        case 'streak_30':
-          shouldUnlock = profile.streak >= 30;
-          break;
-        case 'dungeons_10':
-          shouldUnlock = dungeons >= 10;
-          break;
-        case 'rank_c':
-          shouldUnlock = profile.totalLevel >= 26;
-          break;
-        case 'rank_b':
-          shouldUnlock = profile.totalLevel >= 46;
-          break;
-        case 'porn_free_30':
-          shouldUnlock = profile.pornFreeStreak >= 30;
-          break;
-        case 'porn_free_90':
-          shouldUnlock = profile.pornFreeStreak >= 90;
-          break;
-        case 'porn_free_365':
-          shouldUnlock = profile.pornFreeStreak >= 365;
-          break;
-      }
-      
-      if (shouldUnlock) {
-        return { ...ach, unlocked: true, unlockedAt: new Date() };
-      }
-      return ach;
-    });
-    
-    const newUnlocks = updatedAchievements.filter(a => a.unlocked && !state.achievements.find(oa => oa.id === a.id)?.unlocked);
-    
-    if (newUnlocks.length > 0) {
-      await saveAchievements(updatedAchievements);
-      playAchievement();
-      
-      const unlockNames = newUnlocks.map(a => a.name).join(', ');
-      set({
-        achievements: updatedAchievements,
-        showAchievement: true,
-        systemMessage: `SYSTEM: Achievement Unlocked — ${unlockNames}`,
-      });
-    }
-  },
-  
-  // ============================================================
-  // Wellness
-  // ============================================================
-  
-  logPornFreeDay: async (clean: boolean) => {
-    const state = get();
-    if (!state.profile) return;
-    
-    if (clean) {
-      state.profile.pornFreeStreak += 1;
-      if (state.profile.pornFreeStreak > state.profile.maxPornFreeStreak) {
-        state.profile.maxPornFreeStreak = state.profile.pornFreeStreak;
-      }
-      // Award XP
-      const xpResult = addXP(state.profile, 40);
-      xpResult.profile.coins += 10;
-      
-      await saveProfile(xpResult.profile);
-      set({ profile: xpResult.profile, showLevelUp: xpResult.leveledUp });
-    } else {
-      state.profile.pornFreeStreak = 0;
-      await saveProfile(state.profile);
-      set({ profile: state.profile });
-    }
-    
-    await get().checkAchievements();
-  },
-  
-  logScreenTime: async (minutes: number) => {
-    const state = get();
-    if (!state.profile) return;
-    
-    state.profile.todayScreenTime = minutes;
-    const limit = state.settings?.screenTimeLimit || 240;
-    
-    if (minutes <= limit) {
-      const xpResult = addXP(state.profile, 25);
-      await saveProfile(xpResult.profile);
-      set({ profile: xpResult.profile, showLevelUp: xpResult.leveledUp });
-    }
-    
-    await saveProfile(state.profile);
-    set({ profile: state.profile });
-  },
-  
-  // ============================================================
-  // Evaluation
-  // ============================================================
-  
-  submitEvaluation: async (scores: Record<string, number>, passed: boolean) => {
-    const state = get();
-    if (!state.profile) return;
-    
-    const evalResult: EvaluationResult = {
-      id: `eval-${Date.now()}`,
-      date: new Date(),
-      rank: state.profile.currentRank,
-      passed,
-      scores,
-      nextEvalDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-    };
-    
-    if (passed) {
-      const nextRank = getNextRank(state.profile.currentRank);
-      if (nextRank) {
-        state.profile.currentRank = nextRank;
-        playRankUp();
-      }
-    }
-    
-    state.profile.nextEvaluationDate = evalResult.nextEvalDate;
-    
-    await Promise.all([
-      saveProfile(state.profile),
-      // Save evaluation would go here
-    ]);
-    
-    set({
-      profile: state.profile,
-      evaluations: [evalResult, ...state.evaluations],
-      showRankUp: passed,
-      systemMessage: passed 
-        ? `SYSTEM: Evaluation passed. Rank promoted to ${state.profile.currentRank}.`
-        : 'SYSTEM: Evaluation not passed. Continue training. Next evaluation in 30 days.',
-    });
-  },
-  
-  // ============================================================
-  // Navigation
-  // ============================================================
-  
-  navigateTo: (screen: ScreenName) => {
-    const state = get();
-    set({ previousScreen: state.currentScreen, currentScreen: screen });
-  },
-  
+  navigateTo: (screen: ScreenName) => set({ previousScreen: get().currentScreen, currentScreen: screen }),
   goBack: () => {
-    const state = get();
-    if (state.previousScreen) {
-      set({ currentScreen: state.previousScreen, previousScreen: null });
-    }
+    const prev = get().previousScreen;
+    if (prev) set({ currentScreen: prev, previousScreen: null });
   },
-  
-  // ============================================================
-  // Settings
-  // ============================================================
-  
-  updateSettings: async (newSettings: Partial<SystemSettings>) => {
-    const state = get();
-    const updated = { ...state.settings, ...newSettings } as SystemSettings;
+
+  updateSettings: async (newSettings) => {
+    const updated = { ...get().settings, ...newSettings } as SystemSettings;
     await saveSettings(updated);
     set({ settings: updated });
   },
 
   updateProfile: async (changes) => {
-    const state = get();
-    if (!state.profile) return;
-    const profile = { ...state.profile, ...changes };
-    await saveProfile(profile);
-    set({ profile, systemMessage: 'SYSTEM: Profile measurements updated.' });
+    if (!get().profile) return;
+    const updated = { ...get().profile!, ...changes };
+    await saveProfile(updated);
+    set({ profile: updated, systemMessage: 'SYSTEM: Profile updated.' });
   },
 
   toggleSystemPause: async () => {
-    const state = get();
-    if (!state.settings || !state.profile) return;
-    
-    const isPausing = !state.settings.systemPaused;
-    const updatedSettings = { ...state.settings, systemPaused: isPausing };
-    const updatedProfile = { ...state.profile };
-    
-    let updatedQuests = state.quests;
-    
-    if (!isPausing) {
-      // Resuming
-      updatedProfile.lastLoginDate = new Date();
-      await saveProfile(updatedProfile);
-      
-      // Ensure daily quests are set up for the current day without penalty carryover
-      const todayStr = new Date().toISOString().split('T')[0];
-      const hasTodayQuests = state.quests.some(q => q.type === 'daily' && q.id.includes(todayStr));
-      if (!hasTodayQuests) {
-        const dailyQuests = generateDailyQuests(updatedProfile);
-        const sideQuests = generateSideQuests(updatedProfile);
-        // Clear failed daily quests from before pause so the user resumes with a clean slate
-        updatedQuests = [...state.quests.filter(q => q.type !== 'daily' || q.status === 'completed'), ...dailyQuests, ...sideQuests];
-        await saveQuests(updatedQuests);
-      }
-    }
-    
-    await Promise.all([
-      saveSettings(updatedSettings),
-      saveProfile(updatedProfile),
-    ]);
-    
-    set({
-      settings: updatedSettings,
-      profile: updatedProfile,
-      quests: updatedQuests,
-      penaltyZone: isPausing ? false : updatedQuests.filter(q => q.status === 'failed').length >= 3,
-    });
+    const s = get().settings;
+    if (!s) return;
+    const updated = { ...s, systemPaused: !s.systemPaused };
+    await saveSettings(updated);
+    set({ settings: updated });
   },
-  
-  // ============================================================
-  // Export / Import
-  // ============================================================
-  
+
   exportData: async () => {
     const data = await exportAllData();
-    const { encryptData } = await import('@/lib/encryption');
-    const encrypted = encryptData(data as Record<string, unknown>);
-    
-    const { downloadSystemFile } = await import('@/lib/encryption');
-    downloadSystemFile(encrypted);
-    
-    return encrypted;
+    return JSON.stringify(data);
   },
-  
-  importData: async (data: Record<string, unknown>) => {
+
+  importData: async (data) => {
     await importAllData(data);
     await get().loadAllData();
-    set({ systemMessage: 'SYSTEM: Data restored successfully.' });
   },
-  
+
   resetSystem: async () => {
     await resetAllData();
-    set({
-      profile: null,
-      stats: [],
-      quests: [],
-      workouts: [],
-      achievements: [],
-      titles: [],
-      inventory: [],
-      history: [],
-      dungeons: [],
-      trainingPaths: [],
-      currentScreen: 'opening',
-      isInitialized: false,
-    });
+    set({ profile: null, stats: [], quests: [], workouts: [], achievements: [], titles: [], dungeons: [], currentScreen: 'opening', isInitialized: false });
   },
-  
-  // ============================================================
-  // Notifications
-  // ============================================================
-  
-  dismissNotification: (id: string) => {
-    set({ notifications: get().notifications.filter(n => n.id !== id) });
-  },
-  
-  addNotification: (notification: Notification) => {
+
+  dismissNotification: (id) => set({ notifications: get().notifications.filter(n => n.id !== id) }),
+  addNotification: (n) => {
     playNotification();
-    set({ notifications: [notification, ...get().notifications].slice(0, 20) });
+    set({ notifications: [n, ...get().notifications].slice(0, 20) });
   },
-  
-  // ============================================================
-  // SYSTEM
-  // ============================================================
-  
-  setSystemMessage: (msg: string | null) => {
-    set({ systemMessage: msg });
-  },
-  
+
+  setSystemMessage: (msg) => set({ systemMessage: msg }),
   clearLevelUp: () => set({ showLevelUp: false }),
   clearRankUp: () => set({ showRankUp: false }),
   clearAchievement: () => set({ showAchievement: false }),
-
 }));

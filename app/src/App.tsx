@@ -1,5 +1,5 @@
 // ============================================================
-// SYSTEM — Main Application Component
+// SYSTEM v3 — Main Application Component
 // ============================================================
 
 import { useEffect, useState } from 'react';
@@ -9,7 +9,6 @@ import { OnboardingScreen } from '@/screens/OnboardingScreen';
 import { DashboardScreen } from '@/screens/DashboardScreen';
 import { StatsScreen } from '@/screens/StatsScreen';
 import { QuestsScreen } from '@/screens/QuestsScreen';
-import { TrainingScreen } from '@/screens/TrainingScreen';
 import { DungeonPortal } from '@/screens/DungeonPortal';
 import { InventoryScreen } from '@/screens/InventoryScreen';
 import { AnalyticsScreen } from '@/screens/AnalyticsScreen';
@@ -43,7 +42,6 @@ function App() {
       setTimeout(() => setShowContent(true), 300);
     });
 
-    // Prevent accidental reloading
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
       e.returnValue = 'SYSTEM: Re-initializing will reset temporary state. Confirm exit?';
@@ -69,7 +67,6 @@ function App() {
     };
   }, []);
 
-  // Splash screen plays first — cinematic logo animation
   if (!splashDone) {
     return <SplashScreen onComplete={() => setSplashDone(true)} />;
   }
@@ -82,7 +79,6 @@ function App() {
     return <SuspensionScreen />;
   }
 
-  // Screen router
   const renderScreen = () => {
     switch (currentScreen) {
       case 'opening':
@@ -95,8 +91,6 @@ function App() {
         return <StatsScreen />;
       case 'quests':
         return <QuestsScreen />;
-      case 'training':
-        return <TrainingScreen />;
       case 'dungeon':
         return <DungeonPortal />;
       case 'inventory':
@@ -114,7 +108,6 @@ function App() {
     }
   };
 
-  // Screens that don't use the app layout
   const noLayoutScreens = ['opening', 'onboarding'];
   const useLayout = !noLayoutScreens.includes(currentScreen);
 

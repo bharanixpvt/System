@@ -25,11 +25,32 @@ export type StatName =
   | 'combat'
   | 'mobility'
   | 'discipline'
-  | 'recovery';
+  | 'recovery'
+  | 'balance'
+  | 'technique'
+  | 'coordination'
+  | 'awareness'
+  | 'mentalFortitude'
+  | 'potential'
+  | 'systemAffinity'
+  | 'confidence';
 
-export type QuestType = 'daily' | 'main' | 'side' | 'recovery' | 'boss';
+export type QuestType = 'daily' | 'main' | 'side' | 'recovery' | 'boss' | 'hidden';
 export type QuestStatus = 'active' | 'completed' | 'failed' | 'expired';
-export type QuestCategory = 'strength' | 'agility' | 'mobility' | 'endurance' | 'combat' | 'focus' | 'discipline' | 'recovery' | 'general';
+export type QuestCategory =
+  | 'strength'
+  | 'agility'
+  | 'mobility'
+  | 'endurance'
+  | 'combat'
+  | 'focus'
+  | 'discipline'
+  | 'recovery'
+  | 'reaction'
+  | 'balance'
+  | 'coordination'
+  | 'nutrition'
+  | 'general';
 
 export type AchievementTier = 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond' | 'legendary' | 'mythic';
 export type AchievementType = 'visible' | 'hidden' | 'secret';
@@ -37,9 +58,7 @@ export type AchievementType = 'visible' | 'hidden' | 'secret';
 export type DungeonType = 'beginner' | 'agility' | 'endurance' | 'boss';
 export type DungeonStatus = 'locked' | 'available' | 'completed' | 'expired';
 
-export type TrainingPathName = 'strength' | 'agility' | 'mobility' | 'endurance' | 'selfDefense';
-
-export type ShopItemCategory = 'utility' | 'theme' | 'animation' | 'customization' | 'widget' | 'title_cosmetic';
+export type ShopItemCategory = 'utility' | 'theme' | 'animation' | 'customization' | 'widget' | 'title_cosmetic' | 'upskill';
 
 export type ScreenName =
   | 'opening'
@@ -47,13 +66,59 @@ export type ScreenName =
   | 'dashboard'
   | 'stats'
   | 'quests'
-  | 'training'
   | 'dungeon'
   | 'inventory'
   | 'shop'
   | 'analytics'
   | 'settings'
   | 'evaluation';
+
+// ============================================================
+// Onboarding Data Models
+// ============================================================
+
+export type LifeSituation =
+  | 'Student'
+  | 'College Student'
+  | 'Working Professional'
+  | 'Business Owner'
+  | 'Freelancer'
+  | 'Other';
+
+export type EquipmentOption =
+  | 'Bodyweight Only'
+  | 'Resistance Band'
+  | 'Pull-up Bar'
+  | 'Jump Rope'
+  | 'Dumbbells'
+  | 'Gym Membership'
+  | 'Other';
+
+export type FitnessLevelOption = 'Beginner' | 'Intermediate' | 'Advanced';
+
+export interface DailyScheduleConfig {
+  wakeTime: string;
+  sleepTime: string;
+  workHours: string;
+  preferredTrainingTime: string;
+}
+
+export interface OnboardingData {
+  preferredName: string;
+  age: number;
+  dateOfBirth?: string;
+  country: string;
+  language: string;
+  timezone: string;
+  purpose?: string;
+  lifeSituation: LifeSituation;
+  availableTimeMinutes: number;
+  goals: string[];
+  equipment: EquipmentOption[];
+  fitnessLevel: FitnessLevelOption;
+  limitations: string;
+  schedule: DailyScheduleConfig;
+}
 
 // ============================================================
 // Core Data Models
@@ -87,7 +152,7 @@ export interface PlayerProfile {
   screenTimeLimit: number;
   lastScreenTimeLog?: Date;
   todayScreenTime: number;
-  goals?: string[];
+  goals: string[];
   sleepQuality?: number;
   maxPushups?: number;
   maxPlank?: number;
@@ -95,6 +160,19 @@ export interface PlayerProfile {
   combatPromptAfter?: Date;
   streakShieldActive?: boolean;
   xpAmplifierActive?: boolean;
+  
+  // SYSTEM v3 Additions
+  availableTimeMinutes: number;
+  lifeSituation: LifeSituation;
+  equipment: EquipmentOption[];
+  fitnessExperience: FitnessLevelOption;
+  limitations: string;
+  schedule: DailyScheduleConfig;
+  country: string;
+  language: string;
+  timezone: string;
+  unlockedStats: StatName[];
+  unlockedUpskills: string[];
 }
 
 export interface PlayerStat {
@@ -107,6 +185,7 @@ export interface PlayerStat {
   rank: Rank;
   color: string;
   icon: string;
+  unlocked: boolean;
 }
 
 export interface Quest {
@@ -125,7 +204,12 @@ export interface Quest {
   penaltyXP?: number;
   isGenerated?: boolean;
   isCustom?: boolean;
-  trainingPath?: TrainingPathName;
+  isSystemQuest?: boolean;
+  canReduceXP?: boolean;
+  xpReductionPercent?: number;
+  upskillRequired?: string;
+  isArchived?: boolean;
+  estimatedMinutes?: number;
 }
 
 export interface ExerciseLog {
@@ -141,7 +225,7 @@ export interface ExerciseLog {
 export interface WorkoutLog {
   id: string;
   date: Date;
-  path: TrainingPathName;
+  path: string;
   pathDisplayName: string;
   exercises: ExerciseLog[];
   totalXP: number;
@@ -212,6 +296,7 @@ export interface SystemSettings {
   playerName?: string;
   onboardingComplete: boolean;
   systemPaused?: boolean;
+  ruthlessModeEnabled?: boolean;
 }
 
 export interface Dungeon {
@@ -233,41 +318,15 @@ export interface Dungeon {
   difficultyOffset?: number;
 }
 
-export interface TrainingPath {
-  name: TrainingPathName;
-  displayName: string;
+export interface Upskill {
+  id: string;
+  name: string;
   description: string;
-  color: string;
+  cost: number;
   icon: string;
-  tier: number;
-  maxTier: number;
-  progress: number;
-  exercises: TrainingExercise[];
-  currentExerciseIndex: number;
+  unlocksStats: StatName[];
+  unlocksQuestsDescription: string;
   unlocked: boolean;
-  completed: boolean;
-}
-
-export interface TrainingExercise {
-  name: string;
-  tier: number;
-  difficulty: number;
-  description: string;
-  sets: number;
-  reps: number;
-  restSeconds: number;
-  unlocked: boolean;
-  completed: boolean;
-  path: TrainingPathName;
-}
-
-export interface SelfDefenseStage {
-  stage: number;
-  name: string;
-  description: string;
-  techniques: string[];
-  completed: boolean;
-  progress: number;
 }
 
 export interface ShopItem {
@@ -280,11 +339,12 @@ export interface ShopItem {
   purchased: boolean;
   effect?: string;
   secret?: boolean;
+  upskillId?: string;
 }
 
 export interface Notification {
   id: string;
-  type: 'info' | 'success' | 'warning' | 'danger' | 'level_up' | 'rank_up';
+  type: 'info' | 'success' | 'warning' | 'danger' | 'level_up' | 'rank_up' | 'ruthless';
   title: string;
   message: string;
   timestamp: Date;
@@ -363,7 +423,6 @@ export interface ExportData {
   history: HistoryEntry[];
   settings: SystemSettings;
   dungeons: Dungeon[];
-  trainingPaths: TrainingPath[];
 }
 
 export const RANK_LEVEL_RANGES: Record<Rank, { min: number; max: number; color: string }> = {
@@ -404,17 +463,12 @@ export const STAT_CONFIG: Record<StatName, { displayName: string; description: s
   mobility: { displayName: 'Mobility', description: 'Range of motion, flexibility', color: '#06B6D4', icon: 'Move' },
   discipline: { displayName: 'Discipline', description: 'Consistency, willpower', color: '#EC4899', icon: 'Lock' },
   recovery: { displayName: 'Recovery', description: 'Rest quality, fatigue management', color: '#CBD5E1', icon: 'BatteryCharging' },
+  balance: { displayName: 'Balance', description: 'Proprioception, core stability, physical control', color: '#10B981', icon: 'Scale' },
+  technique: { displayName: 'Technique', description: 'Form accuracy and mechanical efficiency', color: '#3B82F6', icon: 'CheckCircle2' },
+  coordination: { displayName: 'Coordination', description: 'Neuromuscular sync and kinetic chain timing', color: '#8B5CF6', icon: 'Activity' },
+  awareness: { displayName: 'Awareness', description: 'Spatial perception and situational clarity', color: '#06B6D4', icon: 'Eye' },
+  mentalFortitude: { displayName: 'Mental Fortitude', description: 'Pain tolerance, resilience under pressure', color: '#F43F5E', icon: 'BrainCircuit' },
+  potential: { displayName: 'Potential', description: 'Latent capacity to absorb higher training loads', color: '#EAB308', icon: 'Sparkles' },
+  systemAffinity: { displayName: 'System Affinity', description: 'Harmonic alignment with SYSTEM directives', color: '#A855F7', icon: 'Cpu' },
+  confidence: { displayName: 'Confidence', description: 'Unwavering self-assurance and posture', color: '#F97316', icon: 'Flame' },
 };
-
-export const DEFAULT_DAILY_QUESTS = [
-  { name: 'Hydration Protocol', description: 'Drink 3L of water throughout the day', category: 'general' as QuestCategory, xpReward: 15, requirement: 'Water' },
-  { name: 'Mobility Ritual', description: 'Complete 10-minute morning mobility session', category: 'mobility' as QuestCategory, xpReward: 25, requirement: 'Mobility' },
-  { name: 'Strength Maintenance', description: 'Complete a Strength Path training session', category: 'strength' as QuestCategory, xpReward: 50, requirement: 'Strength training' },
-  { name: 'Mental Fortress', description: 'Meditate for 10 minutes', category: 'focus' as QuestCategory, xpReward: 15, requirement: 'Meditation' },
-  { name: 'Knowledge Acquisition', description: 'Read for 20+ minutes', category: 'focus' as QuestCategory, xpReward: 30, requirement: 'Reading' },
-  { name: 'Digital Discipline', description: 'No porn today — maintain streak', category: 'discipline' as QuestCategory, xpReward: 40, requirement: 'Porn-free' },
-  { name: 'Screen Limit', description: 'Stay under screen time limit', category: 'discipline' as QuestCategory, xpReward: 25, requirement: 'Screen time' },
-  { name: 'Recovery Protocol', description: 'Sleep before 11 PM', category: 'recovery' as QuestCategory, xpReward: 20, requirement: 'Sleep' },
-  { name: 'Endurance Base', description: 'Walk 10,000 steps', category: 'endurance' as QuestCategory, xpReward: 30, requirement: 'Steps' },
-  { name: 'Combat Practice', description: 'Shadow boxing — 3 rounds', category: 'combat' as QuestCategory, xpReward: 35, requirement: 'Shadow boxing' },
-];

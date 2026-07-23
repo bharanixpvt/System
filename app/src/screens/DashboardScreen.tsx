@@ -1,7 +1,11 @@
+// ============================================================
+// SYSTEM v3 — Adaptive Player Dashboard Screen
+// Ruthless System Broadcast, Progressive Disclosure, Quest Pacing
+// ============================================================
+
 import { useGameStore } from '@/stores/gameStore';
 import { motion } from 'framer-motion';
 import {
-  TrendingUp,
   Flame,
   Shield,
   Trophy,
@@ -9,12 +13,18 @@ import {
   ChevronRight,
   Target,
   Award,
+  Clock,
+  ScrollText,
+  Skull,
 } from 'lucide-react';
 import { RANK_LEVEL_RANGES } from '@/types';
 import type { ScreenName } from '@/types';
+import { getRuthlessMessage } from '@/db/ruthlessMessages';
+import { useState } from 'react';
 
 export function DashboardScreen() {
   const { profile, stats, quests, navigateTo } = useGameStore();
+  const [ruthlessQuote] = useState(() => getRuthlessMessage());
 
   if (!profile) return null;
 
@@ -27,25 +37,27 @@ export function DashboardScreen() {
 
   const rankColor = RANK_LEVEL_RANGES[profile.currentRank]?.color || '#CBD5E1';
 
+  // Filter stats by progressive disclosure (only unlocked ones)
+  const visibleStats = stats.filter(s => s.unlocked || profile.unlockedStats?.includes(s.name));
+
   return (
-    <div className="space-y-5 pb-6">
-      {/* Player Status Header */}
+    <div className="space-y-4 pb-6">
+      {/* Player Status Card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="glass-card glow-border p-5 relative overflow-hidden"
       >
-        {/* Background glow */}
         <div
           className="absolute -top-20 -right-20 w-40 h-40 rounded-full opacity-20 blur-3xl"
           style={{ backgroundColor: rankColor }}
         />
 
         <div className="relative z-10">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-3">
             <div>
-              <div className="system-text text-white/40 mb-1">PLAYER STATUS</div>
-              <h1 className="text-2xl font-bold">{profile.name}</h1>
+              <div className="system-text text-white/40 mb-1">SYSTEM OPERATOR</div>
+              <h1 className="text-2xl font-bold tracking-tight">{profile.name}</h1>
             </div>
             <div className="text-right">
               <div
@@ -60,15 +72,15 @@ export function DashboardScreen() {
 
           {/* Level & XP */}
           <div className="flex items-end gap-3 mb-3">
-            <span className="text-5xl font-bold text-gradient-cyan">{profile.totalLevel}</span>
-            <span className="text-sm text-white/40 mb-1.5">/ 999</span>
+            <span className="text-5xl font-bold text-gradient-cyan">Lv.{profile.totalLevel}</span>
+            <span className="text-xs text-white/40 mb-1.5 font-mono">AVAILABLE TIME: {profile.availableTimeMinutes || 30} MINS/DAY</span>
           </div>
 
           {/* XP Bar */}
           <div className="mb-4">
             <div className="flex justify-between text-xs mb-1.5">
-              <span className="text-white/50">XP Progress</span>
-              <span className="text-[#CBD5E1]">{Math.round(xpPercent)}%</span>
+              <span className="text-white/50">Experience Pacing</span>
+              <span className="text-[#CBD5E1] font-mono">{Math.round(xpPercent)}%</span>
             </div>
             <div className="xp-bar">
               <motion.div
@@ -78,162 +90,152 @@ export function DashboardScreen() {
                 className="xp-bar-fill"
               />
             </div>
-            <div className="flex justify-between text-[10px] text-white/30 mt-1">
-              <span>{profile.totalXP.toLocaleString()} XP</span>
-              <span>{profile.xpToNextLevel.toLocaleString()} to next</span>
-            </div>
           </div>
 
           {/* Quick Stats Row */}
           <div className="grid grid-cols-3 gap-3">
             <QuickStat icon={Flame} value={profile.streak} label="Day Streak" color="#FBBF24" />
             <QuickStat icon={Trophy} value={profile.coins} label="Coins" color="#EAB308" />
-            <QuickStat icon={Target} value={`${completionPercent}%`} label="Daily" color="#4ADE80" />
+            <QuickStat icon={Target} value={`${completionPercent}%`} label="Quests Cleared" color="#4ADE80" />
           </div>
         </div>
       </motion.div>
 
-      {/* Fatigue & Condition */}
+      {/* RUTHLESS SYSTEM BROADCAST CARD */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="glass-card p-4"
+        className="glass-card p-4 border-[#EF4444]/40 bg-gradient-to-r from-[#EF4444]/10 to-transparent relative overflow-hidden"
       >
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Zap size={16} className={profile.fatigue > 60 ? 'text-[#FBBF24]' : 'text-[#4ADE80]'} />
-            <span className="text-sm font-medium">Condition</span>
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#EF4444]/20 border border-[#EF4444]/40 flex items-center justify-center shrink-0 mt-0.5">
+            <Skull size={20} className="text-[#EF4444] animate-pulse" />
           </div>
-          <span className={`text-xs font-bold ${
-            profile.fatigue > 70 ? 'text-[#FF5A5F]' :
-            profile.fatigue > 40 ? 'text-[#FBBF24]' : 'text-[#4ADE80]'
-          }`}>
-            {profile.fatigue > 70 ? 'ELEVATED' : profile.fatigue > 40 ? 'MODERATE' : 'OPTIMAL'}
-          </span>
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="system-text text-[#EF4444] text-xs">RUTHLESS DIRECTIVE</span>
+            </div>
+            <p className="text-xs font-semibold text-white/90 leading-relaxed font-mono">
+              "{ruthlessQuote}"
+            </p>
+          </div>
         </div>
-        <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${profile.fatigue}%` }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className={`h-full rounded-full ${
-              profile.fatigue > 70 ? 'bg-gradient-to-r from-[#FF5A5F] to-[#FBBF24]' :
-              profile.fatigue > 40 ? 'bg-gradient-to-r from-[#FBBF24] to-[#4ADE80]' :
-              'bg-gradient-to-r from-[#4ADE80] to-[#CBD5E1]'
-            }`}
-          />
-        </div>
-        <p className="text-xs text-white/40 mt-2">
-          Fatigue: {Math.round(profile.fatigue)}% — {profile.fatigue > 70
-            ? 'Recovery protocols recommended'
-            : profile.fatigue > 40
-            ? 'Maintain current intensity'
-            : 'Full training capacity available'}
-        </p>
       </motion.div>
 
-      {/* Active Quests Preview */}
+      {/* Available Time Budget Banner */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+        className="glass-card p-3.5 flex items-center justify-between border-white/10"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center text-[#CBD5E1]">
+            <Clock size={18} />
+          </div>
+          <div>
+            <div className="text-xs font-bold">Daily Time Foundation</div>
+            <div className="text-[11px] text-white/50">{profile.availableTimeMinutes || 30} minutes dedicated today</div>
+          </div>
+        </div>
+        <button
+          onClick={() => navigateTo('settings' as ScreenName)}
+          className="text-xs text-[#CBD5E1] underline hover:text-white"
+        >
+          Adjust
+        </button>
+      </motion.div>
+
+      {/* Fatigue Condition */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
         className="glass-card p-4"
       >
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold">Active Quests</h2>
-          <button
-            onClick={() => navigateTo('quests' as ScreenName)}
-            className="flex items-center gap-1 text-xs text-[#CBD5E1] hover:text-[#CBD5E1]/80 transition-colors"
-          >
-            View All <ChevronRight size={14} />
-          </button>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <Zap size={16} className={profile.fatigue > 60 ? 'text-[#FBBF24]' : 'text-[#4ADE80]'} />
+            <span className="text-xs font-semibold">Physical Fatigue Index</span>
+          </div>
+          <span className={`text-xs font-bold ${
+            profile.fatigue > 70 ? 'text-[#FF5A5F]' :
+            profile.fatigue > 40 ? 'text-[#FBBF24]' : 'text-[#4ADE80]'
+          }`}>
+            {profile.fatigue > 70 ? 'ELEVATED FATIGUE' : profile.fatigue > 40 ? 'MODERATE' : 'OPTIMAL CONDITION'}
+          </span>
         </div>
-
-        <div className="space-y-2">
-          {quests.filter(q => q.status === 'active').slice(0, 3).map((quest, i) => (
-            <motion.div
-              key={quest.id}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 + i * 0.1 }}
-              className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/8 transition-colors cursor-pointer"
-              onClick={() => navigateTo('quests' as ScreenName)}
-            >
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{quest.name}</p>
-                <p className="text-xs text-white/40 truncate">{quest.description}</p>
-              </div>
-              <span className="text-xs font-bold text-[#CBD5E1] ml-3">+{quest.xpReward} XP</span>
-            </motion.div>
-          ))}
-          {quests.filter(q => q.status === 'active').length === 0 && (
-            <p className="text-sm text-white/30 text-center py-4">All quests completed for today</p>
-          )}
+        <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden mb-2">
+          <div
+            style={{ width: `${profile.fatigue}%` }}
+            className={`h-full rounded-full ${
+              profile.fatigue > 70 ? 'bg-[#FF5A5F]' : profile.fatigue > 40 ? 'bg-[#FBBF24]' : 'bg-[#4ADE80]'
+            }`}
+          />
         </div>
       </motion.div>
 
-      {/* Quick Actions */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="grid grid-cols-2 gap-3"
-      >
+      {/* Quick Navigation Actions */}
+      <div className="grid grid-cols-2 gap-3">
         <QuickActionButton
-          icon={TrendingUp}
-          label="Start Training"
-          description="Begin a session"
-          onClick={() => navigateTo('training' as ScreenName)}
+          icon={ScrollText}
+          label="Quests Engine"
+          description="View daily missions"
+          onClick={() => navigateTo('quests' as ScreenName)}
           color="#CBD5E1"
         />
         <QuickActionButton
           icon={Award}
           label="Enter Dungeon"
-          description="Challenge awaits"
+          description="Rank trial"
           onClick={() => navigateTo('dungeon' as ScreenName)}
           color="#8B5CF6"
         />
-      </motion.div>
+      </div>
 
-      {/* Top Stats Preview */}
-      {stats.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="glass-card p-4"
-        >
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold">Top Attributes</h2>
-            <button
-              onClick={() => navigateTo('stats' as ScreenName)}
-              className="flex items-center gap-1 text-xs text-[#CBD5E1] hover:text-[#CBD5E1]/80 transition-colors"
-            >
-              View All <ChevronRight size={14} />
-            </button>
+      {/* Progressive Disclosure Attributes Grid */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="glass-card p-4"
+      >
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h2 className="text-sm font-semibold">Active Attributes</h2>
+            <p className="text-[10px] text-white/40">Only attributes matching your directives are visible</p>
           </div>
-          <div className="grid grid-cols-3 gap-2">
-            {stats.sort((a, b) => b.level - a.level).slice(0, 3).map(stat => (
-              <div key={stat.name} className="text-center p-2.5 rounded-lg bg-white/5">
-                <div className="text-lg font-bold" style={{ color: stat.color }}>{stat.level}</div>
-                <div className="text-[10px] text-white/50 uppercase">{stat.displayName}</div>
+          <button
+            onClick={() => navigateTo('stats' as ScreenName)}
+            className="flex items-center gap-1 text-xs text-[#CBD5E1] hover:text-[#CBD5E1]/80 transition-colors"
+          >
+            All Stats <ChevronRight size={14} />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2.5">
+          {visibleStats.slice(0, 4).map(stat => (
+            <div key={stat.name} className="p-3 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
+              <div>
+                <div className="text-xs font-semibold">{stat.displayName}</div>
+                <div className="text-[10px] text-white/40">Level {stat.level}</div>
               </div>
-            ))}
-          </div>
-        </motion.div>
-      )}
+              <div className="text-base font-bold" style={{ color: stat.color }}>{stat.level}</div>
+            </div>
+          ))}
+        </div>
+      </motion.div>
     </div>
   );
 }
 
-// Quick Stat Component
 function QuickStat({ icon: Icon, value, label, color }: {
   icon: typeof Flame; value: string | number; label: string; color: string;
 }) {
   return (
     <div className="flex items-center gap-2">
-      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${color}15` }}>
+      <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${color}15` }}>
         <Icon size={14} style={{ color }} />
       </div>
       <div>
@@ -244,9 +246,8 @@ function QuickStat({ icon: Icon, value, label, color }: {
   );
 }
 
-// Quick Action Button
 function QuickActionButton({ icon: Icon, label, description, onClick, color }: {
-  icon: typeof TrendingUp; label: string; description: string; onClick: () => void; color: string;
+  icon: typeof ScrollText; label: string; description: string; onClick: () => void; color: string;
 }) {
   return (
     <motion.button
@@ -256,7 +257,7 @@ function QuickActionButton({ icon: Icon, label, description, onClick, color }: {
       className="glass-card p-4 text-left transition-all hover:border-opacity-30 btn-press"
       style={{ borderColor: `${color}30` }}
     >
-      <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-2" style={{ backgroundColor: `${color}15` }}>
+      <div className="w-9 h-9 rounded-lg flex items-center justify-center mb-2" style={{ backgroundColor: `${color}15` }}>
         <Icon size={18} style={{ color }} />
       </div>
       <p className="text-sm font-semibold">{label}</p>
