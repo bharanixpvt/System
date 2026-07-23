@@ -116,7 +116,7 @@ export function OnboardingScreen() {
   // Form State
   const [preferredName, setPreferredName] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
-  const [gender, setGender] = useState<'male' | 'female'>('male');
+  const [gender, setGender] = useState<'male' | 'female' | ''>('');
   const [weightKg, setWeightKg] = useState<number | ''>('');
   const [heightCm, setHeightCm] = useState<number | ''>('');
   const [purpose] = useState('Mastering my physical and mental potential.');
@@ -135,12 +135,15 @@ export function OnboardingScreen() {
   const [preferredTrainingTime, setPreferredTrainingTime] = useState('18:00');
 
   const calculatedAge = calculateAgeFromDOB(dateOfBirth);
-  const estimatedBodyFat = calculateBodyFat(
-    typeof weightKg === 'number' ? weightKg : 70,
-    typeof heightCm === 'number' ? heightCm : 175,
-    calculatedAge,
-    gender
+  const hasAllBiometrics = Boolean(
+    dateOfBirth &&
+    gender !== '' &&
+    typeof heightCm === 'number' && heightCm > 0 &&
+    typeof weightKg === 'number' && weightKg > 0
   );
+  const estimatedBodyFat = hasAllBiometrics && gender !== ''
+    ? calculateBodyFat(weightKg as number, heightCm as number, calculatedAge, gender)
+    : 0;
 
   const toggleGoal = (g: string) => {
     if (goals.includes(g)) {
@@ -178,7 +181,7 @@ export function OnboardingScreen() {
       preferredName: preferredName.trim() || 'Player',
       age: calculatedAge,
       dateOfBirth: dateOfBirth || '2000-01-01',
-      gender,
+      gender: gender || 'male',
       weightKg: typeof weightKg === 'number' ? weightKg : 70,
       heightCm: typeof heightCm === 'number' ? heightCm : 175,
       bodyFatPercent: estimatedBodyFat,
@@ -320,8 +323,8 @@ export function OnboardingScreen() {
                     </div>
                   </div>
 
-                  {/* Auto-calculated Body Fat % Card — Rendered ONLY after DOB, Height & Weight are entered */}
-                  {Boolean(dateOfBirth && heightCm !== '' && weightKg !== '') && (
+                  {/* Auto-calculated Body Fat % Card — Rendered ONLY after ALL values (DOB, Gender, Height, Weight) are entered */}
+                  {hasAllBiometrics && (
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}

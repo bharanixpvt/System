@@ -445,6 +445,29 @@ export function generateDailyQuests(profile?: PlayerProfile | null): Quest[] {
     });
   }
 
+  // Level-Based Progressive Overload Quest Scaling
+  const userLevel = profile?.totalLevel || 1;
+  if (userLevel >= 3) {
+    const levelMultiplier = 1 + (userLevel - 1) * 0.05;
+    quests.push({
+      id: `sys-quest-progressive-overload-${Date.now()}`,
+      type: 'daily',
+      name: `Level ${userLevel} Progressive Overload Challenge`,
+      description: `Targeting Level ${userLevel} physical threshold. Execute 4 sets pushing 1 rep past your previous personal record.`,
+      status: 'active',
+      xpReward: Math.round(55 * levelMultiplier),
+      coinReward: Math.round(20 * levelMultiplier),
+      createdAt: now,
+      expiresAt,
+      category: 'strength',
+      requirement: `Level ${userLevel} PR Push`,
+      isGenerated: true,
+      isSystemQuest: true,
+      canReduceXP: true,
+      estimatedMinutes: Math.min(20, availableTime),
+    });
+  }
+
   // Upskill Hidden Quests
   if (upskills.includes('reaction-analysis')) {
     quests.push({
