@@ -59,25 +59,7 @@ const INJURY_OPTIONS = [
 ];
 
 
-const COUNTRIES = [
-  'United States', 'India', 'United Kingdom', 'Canada', 'Australia',
-  'Germany', 'France', 'Japan', 'Brazil', 'Singapore', 'UAE',
-  'South Korea', 'Italy', 'Spain', 'Netherlands', 'Switzerland',
-  'Mexico', 'Indonesia', 'Other'
-];
 
-const LANGUAGES = [
-  'English', 'Spanish', 'Hindi', 'French', 'German',
-  'Japanese', 'Mandarin Chinese', 'Portuguese', 'Russian',
-  'Arabic', 'Italian', 'Korean', 'Other'
-];
-
-const TIMEZONES = [
-  'UTC-12:00', 'UTC-10:00 (Hawaii)', 'UTC-08:00 (PST)', 'UTC-07:00 (MST)',
-  'UTC-06:00 (CST)', 'UTC-05:00 (EST)', 'UTC+00:00 (GMT/UTC)', 'UTC+01:00 (CET)',
-  'UTC+03:00 (MSK)', 'UTC+05:30 (IST)', 'UTC+08:00 (SGT)', 'UTC+09:00 (JST)',
-  'UTC+10:00 (AEST)', 'UTC+12:00 (NZST)'
-];
 
 const TIME_OPTIONS = [
   { label: '15 Minutes', value: 15 },
@@ -137,9 +119,6 @@ export function OnboardingScreen() {
   const [gender, setGender] = useState<'male' | 'female'>('male');
   const [weightKg, setWeightKg] = useState<number | ''>('');
   const [heightCm, setHeightCm] = useState<number | ''>('');
-  const [country, setCountry] = useState('United States');
-  const [language, setLanguage] = useState('English');
-  const [timezone, setTimezone] = useState('UTC+00:00 (GMT/UTC)');
   const [purpose] = useState('Mastering my physical and mental potential.');
 
   const [lifeSituation, setLifeSituation] = useState<LifeSituation>('Working Professional');
@@ -203,9 +182,9 @@ export function OnboardingScreen() {
       weightKg: typeof weightKg === 'number' ? weightKg : 70,
       heightCm: typeof heightCm === 'number' ? heightCm : 175,
       bodyFatPercent: estimatedBodyFat,
-      country,
-      language,
-      timezone,
+      country: 'Earth',
+      language: 'English',
+      timezone: 'GMT',
       purpose: purpose || 'Mastering physical and mental potential.',
       lifeSituation: lifeSituation || 'Working Professional',
       availableTimeMinutes: availableTimeMinutes || 30,
@@ -269,7 +248,7 @@ export function OnboardingScreen() {
                   <User className="text-[#CBD5E1]" size={24} />
                 </div>
                 <div className="system-text text-[#CBD5E1] text-xs mb-1">STAGE 1: PLAYER IDENTITY & BIOMETRICS</div>
-                <h2 className="text-xl font-bold mb-4">Biometric & Locational Initialization</h2>
+                <h2 className="text-xl font-bold mb-4">Biometric Initialization</h2>
 
                 <div className="space-y-3">
                   <div>
@@ -341,57 +320,23 @@ export function OnboardingScreen() {
                     </div>
                   </div>
 
-                  {/* Auto-calculated Body Fat % Card */}
-                  <div className="p-3 rounded-xl bg-[#CBD5E1]/10 border border-[#CBD5E1]/20 flex items-center justify-between">
-                    <div>
-                      <div className="text-[10px] text-white/50 uppercase tracking-widest">Auto Biometric Scan</div>
-                      <div className="text-xs font-semibold text-white/90">Age: <span className="text-[#38BDF8]">{calculatedAge} yrs</span></div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-[10px] text-white/50 uppercase tracking-widest">Est. Body Fat</div>
-                      <div className="text-sm font-bold text-[#4ADE80]">{estimatedBodyFat}%</div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-xs text-white/60 block mb-1">Country</label>
-                    <select
-                      value={country}
-                      onChange={e => setCountry(e.target.value)}
-                      className="w-full bg-[#0F172A] border border-white/15 rounded-xl px-3 py-2 text-sm text-white focus:border-[#CBD5E1] outline-none"
+                  {/* Auto-calculated Body Fat % Card — Rendered ONLY after DOB, Height & Weight are entered */}
+                  {Boolean(dateOfBirth && heightCm !== '' && weightKg !== '') && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-3 rounded-xl bg-[#CBD5E1]/10 border border-[#CBD5E1]/20 flex items-center justify-between"
                     >
-                      {COUNTRIES.map(c => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs text-white/60 block mb-1">Language</label>
-                      <select
-                        value={language}
-                        onChange={e => setLanguage(e.target.value)}
-                        className="w-full bg-[#0F172A] border border-white/15 rounded-xl px-3 py-2 text-sm text-white focus:border-[#CBD5E1] outline-none"
-                      >
-                        {LANGUAGES.map(l => (
-                          <option key={l} value={l}>{l}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-xs text-white/60 block mb-1">Timezone</label>
-                      <select
-                        value={timezone}
-                        onChange={e => setTimezone(e.target.value)}
-                        className="w-full bg-[#0F172A] border border-white/15 rounded-xl px-3 py-2 text-sm text-white focus:border-[#CBD5E1] outline-none"
-                      >
-                        {TIMEZONES.map(tz => (
-                          <option key={tz} value={tz}>{tz}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
+                      <div>
+                        <div className="text-[10px] text-white/50 uppercase tracking-widest">Auto Biometric Scan</div>
+                        <div className="text-xs font-semibold text-white/90">Age: <span className="text-[#38BDF8]">{calculatedAge} yrs</span></div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-[10px] text-white/50 uppercase tracking-widest">Est. Body Fat</div>
+                        <div className="text-sm font-bold text-[#4ADE80]">{estimatedBodyFat}%</div>
+                      </div>
+                    </motion.div>
+                  )}
                 </div>
               </div>
             )}
