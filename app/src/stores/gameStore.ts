@@ -54,7 +54,6 @@ import {
   saveTitles,
   getInventory,
   getHistory,
-  addHistoryEntry,
   getSettings,
   saveSettings,
   getDungeons,
@@ -63,7 +62,7 @@ import {
   importAllData,
   resetAllData,
 } from '@/db';
-import { playQuestCompleted, playLevelUp, playAchievement, playRankUp, playPenalty, playNotification } from '@/lib/audio';
+import { playQuestCompleted, playLevelUp, playAchievement, playPenalty, playNotification } from '@/lib/audio';
 
 const defaultSettings: SystemSettings = {
   audioEnabled: true,
@@ -558,11 +557,11 @@ export const useGameStore = create<SystemState>((set, get) => ({
     set({ stats });
   },
 
-  enterDungeon: async (dungeonId: string) => {
+  enterDungeon: async (_dungeonId: string) => {
     set({ previousScreen: get().currentScreen, currentScreen: 'dungeon' });
   },
 
-  completeDungeon: async (dungeonId: string, timeMinutes: number) => {
+  completeDungeon: async (dungeonId: string, _timeMinutes: number) => {
     const state = get();
     const dungeon = state.dungeons.find(d => d.id === dungeonId);
     if (!dungeon || !state.profile) return;

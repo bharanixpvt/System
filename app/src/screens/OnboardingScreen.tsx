@@ -7,7 +7,6 @@ import { useState } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ShieldAlert,
   Clock,
   Dumbbell,
   Sparkles,
@@ -28,7 +27,7 @@ import type {
   FitnessLevelOption,
 } from '@/types';
 
-const STAGES = [
+export const STAGE_LABELS = [
   'Identity Scan',
   'Life Situation',
   'Daily Available Time',
@@ -95,7 +94,7 @@ export function OnboardingScreen() {
   const [country, setCountry] = useState('United States');
   const [language, setLanguage] = useState('English');
   const [timezone, setTimezone] = useState('GMT-5');
-  const [purpose, setPurpose] = useState('Mastering my physical and mental potential.');
+  const [purpose] = useState('Mastering my physical and mental potential.');
 
   const [lifeSituation, setLifeSituation] = useState<LifeSituation>('Working Professional');
   const [availableTimeMinutes, setAvailableTimeMinutes] = useState<number>(30);

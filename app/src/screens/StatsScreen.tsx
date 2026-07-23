@@ -8,7 +8,7 @@ import { useGameStore } from '@/stores/gameStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Dumbbell, Zap, Heart, Target, Gauge, Shield, Move, Lock, BatteryCharging,
-  TrendingUp, ChevronDown, ChevronUp, Info, EyeOff, RotateCcw, AlertOctagon, Scale, CheckCircle2, Activity, Eye, BrainCircuit, Sparkles, Cpu, Flame
+  TrendingUp, ChevronDown, ChevronUp, EyeOff, RotateCcw, AlertOctagon, Scale, CheckCircle2, Activity, Eye, BrainCircuit, Sparkles, Cpu, Flame
 } from 'lucide-react';
 import type { StatName } from '@/types';
 import { STAT_CONFIG } from '@/types';

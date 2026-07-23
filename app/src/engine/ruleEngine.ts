@@ -4,7 +4,26 @@
 // ============================================================
 
 import type { PlayerProfile, PlayerStat, Quest, GameState, Notification } from '@/types';
-import { generateRecoveryQuest, calculateFatigue } from './gameEngine';
+import { calculateFatigue } from './gameEngine';
+
+function buildRecoveryQuest(profile: PlayerProfile): Quest {
+  const now = new Date();
+  return {
+    id: `recovery-${Date.now()}`,
+    type: 'recovery',
+    name: 'SYSTEM Recovery Protocol',
+    description: `Rest, hydrate, and perform 10 minutes of gentle mobility work. Fatigue: ${profile.fatigue ?? 0}%.`,
+    status: 'active',
+    xpReward: 30,
+    coinReward: 10,
+    createdAt: now,
+    expiresAt: new Date(now.getTime() + 24 * 60 * 60 * 1000),
+    category: 'recovery',
+    isSystemQuest: true,
+    canReduceXP: false,
+    estimatedMinutes: 10,
+  };
+}
 
 export interface RuleEngineInput {
   profile: PlayerProfile;
@@ -54,7 +73,7 @@ export function processRules(input: RuleEngineInput): RuleEngineOutput {
       read: false,
       autoDismiss: true,
     });
-    newQuests.push(generateRecoveryQuest(profile));
+    newQuests.push(buildRecoveryQuest(profile));
     systemMessage = 'SYSTEM: Player fatigue detected. Recovery Quest generated.';
   }
 
@@ -93,7 +112,7 @@ export function processRules(input: RuleEngineInput): RuleEngineOutput {
 
   // 4. Porn relapse handling (compassionate)
   if (pornRelapseToday) {
-    newQuests.push(generateRecoveryQuest(profile));
+    newQuests.push(buildRecoveryQuest(profile));
     notifications.push({
       id: `notif-relapse-${Date.now()}`,
       type: 'warning',

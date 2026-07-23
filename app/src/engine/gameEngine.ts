@@ -12,7 +12,7 @@ import type {
   Achievement,
   Title,
   Upskill,
-  QuestCategory,
+  Dungeon,
 } from '@/types';
 import { RANK_ORDER, RANK_LEVEL_RANGES, STAT_CONFIG } from '@/types';
 

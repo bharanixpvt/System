@@ -14,7 +14,6 @@ import type {
   HistoryEntry,
   SystemSettings,
   Dungeon,
-  TrainingPath,
   EvaluationResult,
 } from '@/types';
 
@@ -29,7 +28,6 @@ export class SystemDatabase extends Dexie {
   history!: Table<HistoryEntry>;
   settings!: Table<SystemSettings>;
   dungeons!: Table<Dungeon>;
-  trainingPaths!: Table<TrainingPath>;
   evaluations!: Table<EvaluationResult>;
 
   constructor() {
@@ -45,7 +43,6 @@ export class SystemDatabase extends Dexie {
       history: 'id, date, type',
       settings: '++id',
       dungeons: 'id, type, status, difficulty',
-      trainingPaths: 'name',
       evaluations: 'id, date, rank, passed',
     });
   }
@@ -177,18 +174,6 @@ export async function saveDungeons(dungeons: Dungeon[]): Promise<void> {
   await db.dungeons.bulkPut(dungeons);
 }
 
-export async function getTrainingPaths(): Promise<TrainingPath[]> {
-  return await db.trainingPaths.toArray();
-}
-
-export async function saveTrainingPath(path: TrainingPath): Promise<void> {
-  await db.trainingPaths.put(path);
-}
-
-export async function saveTrainingPaths(paths: TrainingPath[]): Promise<void> {
-  await db.trainingPaths.bulkPut(paths);
-}
-
 export async function getEvaluations(): Promise<EvaluationResult[]> {
   return await db.evaluations.orderBy('date').reverse().toArray();
 }
@@ -199,7 +184,7 @@ export async function saveEvaluation(evalResult: EvaluationResult): Promise<void
 
 // Bulk export all data
 export async function exportAllData() {
-  const [profile, stats, quests, workouts, achievements, titles, inventory, history, settings, dungeons, trainingPaths, evaluations] =
+  const [profile, stats, quests, workouts, achievements, titles, inventory, history, settings, dungeons, evaluations] =
     await Promise.all([
       db.profile.toArray(),
       db.stats.toArray(),
@@ -211,12 +196,11 @@ export async function exportAllData() {
       db.history.toArray(),
       db.settings.toArray(),
       db.dungeons.toArray(),
-      db.trainingPaths.toArray(),
       db.evaluations.toArray(),
     ]);
 
   return {
-    version: '1.0.0',
+    version: '3.0.0',
     exportedAt: new Date().toISOString(),
     profile: profile[0] || null,
     stats,
@@ -228,7 +212,6 @@ export async function exportAllData() {
     history,
     settings: settings[0] || null,
     dungeons,
-    trainingPaths,
     evaluations,
   };
 }
@@ -248,7 +231,6 @@ export async function importAllData(data: Record<string, unknown>): Promise<void
       db.history,
       db.settings,
       db.dungeons,
-      db.trainingPaths,
       db.evaluations,
     ],
     async () => {
@@ -262,7 +244,6 @@ export async function importAllData(data: Record<string, unknown>): Promise<void
       if (data.history && Array.isArray(data.history)) await db.history.bulkPut(data.history as HistoryEntry[]);
       if (data.settings) await db.settings.put(data.settings as SystemSettings);
       if (data.dungeons && Array.isArray(data.dungeons)) await db.dungeons.bulkPut(data.dungeons as Dungeon[]);
-      if (data.trainingPaths && Array.isArray(data.trainingPaths)) await db.trainingPaths.bulkPut(data.trainingPaths as TrainingPath[]);
       if (data.evaluations && Array.isArray(data.evaluations)) await db.evaluations.bulkPut(data.evaluations as EvaluationResult[]);
     }
   );

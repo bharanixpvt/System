@@ -7,11 +7,11 @@ import { useState } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Coins, Sparkles, Check, X, Cpu, ShieldCheck, Lock, Zap
+  Coins, Sparkles, Check, X, Cpu, ShieldCheck
 } from 'lucide-react';
 import { playButtonPress } from '@/lib/audio';
 import { DEFAULT_UPSKILLS } from '@/engine/gameEngine';
-import type { Upskill, ShopItem } from '@/types';
+import type { Upskill } from '@/types';
 
 export function ShopScreen() {
   const { profile, shopItems, purchaseUpskill } = useGameStore();

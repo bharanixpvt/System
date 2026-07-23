@@ -8,9 +8,9 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "cap:sync": "npm run build && npx cap sync",
-    "cap:android": "npm run build && npx cap add android && npx cap open android",
-    "cap:ios": "npm run build && npx cap add ios && npx cap open ios"
+    "cap:sync": "npm run build && npx @capacitor/cli sync",
+    "cap:android": "npm run build && npx @capacitor/cli add android && npx @capacitor/cli open android",
+    "cap:ios": "npm run build && npx @capacitor/cli add ios && npx @capacitor/cli open ios"
   },
   "dependencies": {
     "@capacitor/android": "^7.0.0",

@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ScrollText, Check, Clock, Zap, Shield,
+  ScrollText, Check, Zap, Shield,
   Sun, Flag, HelpCircle, HeartPulse, Sword, Plus, Trash2, RotateCcw, AlertTriangle, Sparkles, Coins, Minus
 } from 'lucide-react';
 import type { QuestType, QuestCategory, Quest } from '@/types';
