@@ -251,56 +251,60 @@ export const DEFAULT_UPSKILLS: Upskill[] = [
 ];
 
 export const DEFAULT_UTILITY_ITEMS: import('@/types').ShopItem[] = [
-  {
-    id: 'penalty-eraser',
-    type: 'utility',
-    name: 'Penalty Eraser',
-    description: 'Instantly resets Penalty Zone status and forgives missed quest strikes.',
-    cost: 100,
-    preview: '🛡️ Eraser',
-    purchased: false,
-    effect: 'penalty_erase',
-  },
-  {
-    id: 'fatigue-catalyst',
-    type: 'utility',
-    name: 'Fatigue Recovery Catalyst',
-    description: 'Instantly reduces player fatigue by 30% to maintain training capacity.',
-    cost: 80,
-    preview: '⚡ Recovery',
-    purchased: false,
-    effect: 'fatigue_reduce',
-  },
-  {
-    id: 'xp-scroll',
-    type: 'utility',
-    name: 'XP Multiplier Scroll (24h)',
-    description: 'Grants +50% bonus XP for all quest completions over the next 24 hours.',
-    cost: 150,
-    preview: '📜 XP Boost',
-    purchased: false,
-    effect: 'xp_boost',
-  },
-  {
-    id: 'dungeon-pass',
-    type: 'utility',
-    name: 'Dungeon Re-entry Pass',
-    description: 'Unlocks 1 additional instant dungeon run without rank penalty.',
-    cost: 120,
-    preview: '🔑 Pass',
-    purchased: false,
-    effect: 'dungeon_key',
-  },
-  {
-    id: 'monarch-title-scroll',
-    type: 'utility',
-    name: 'Apex Operator Title Scroll',
-    description: 'Unlocks the exclusive "Apex Operator" system title for your profile.',
-    cost: 200,
-    preview: '👑 Title',
-    purchased: false,
-    effect: 'title_unlock',
-  },
+  { id: 'penalty-eraser', type: 'utility', name: 'Penalty Eraser', description: 'Instantly resets Penalty Zone status and forgives missed quest strikes.', cost: 100, preview: '🛡️ Eraser', purchased: false, effect: 'penalty_erase' },
+  { id: 'fatigue-catalyst', type: 'utility', name: 'Fatigue Recovery Catalyst', description: 'Instantly reduces player fatigue by 30% to maintain training capacity.', cost: 80, preview: '⚡ Recovery', purchased: false, effect: 'fatigue_reduce' },
+  { id: 'xp-scroll', type: 'utility', name: 'XP Multiplier Scroll (24h)', description: 'Grants +50% bonus XP for all quest completions over the next 24 hours.', cost: 150, preview: '📜 XP Boost', purchased: false, effect: 'xp_boost' },
+  { id: 'dungeon-pass', type: 'utility', name: 'Dungeon Re-entry Pass', description: 'Unlocks 1 additional instant dungeon run without rank penalty.', cost: 120, preview: '🔑 Pass', purchased: false, effect: 'dungeon_key' },
+  { id: 'monarch-title-scroll', type: 'utility', name: 'Apex Operator Title Scroll', description: 'Unlocks the exclusive "Apex Operator" system title for your profile.', cost: 200, preview: '👑 Title', purchased: false, effect: 'title_unlock' },
+  { id: 'focus-pill-1', type: 'utility', name: 'Mental Focus Elixir', description: 'Improves focus speed. Common Grade mental enhancer.', cost: 30, preview: '🧪 Focus', purchased: false, effect: 'stat_boost_focus' },
+  { id: 'hydration-salt-1', type: 'utility', name: 'Hydration Salts', description: 'Restores electrolyte balance. Essential recovery helper.', cost: 20, preview: '🧂 Salts', purchased: false, effect: 'fatigue_reduce_minor' },
+  { id: 'protein-bar-1', type: 'utility', name: 'Synthesized Protein Bar', description: 'Provides minor immediate recovery after hard quests.', cost: 25, preview: '🍫 Protein', purchased: false, effect: 'fatigue_reduce_minor' },
+  { id: 'energy-drink-1', type: 'utility', name: 'Core Energy Surge', description: 'Increases motivation output. +10% training speed.', cost: 40, preview: '🥤 Energy', purchased: false, effect: 'fatigue_reduce_minor' },
+  { id: 'core-stimulant-1', type: 'utility', name: 'Neural Core Stimulant', description: 'Stimulates neural transmission for fast-twitch muscles.', cost: 50, preview: '⚡ Stim', purchased: false, effect: 'stat_boost_agility' },
+  { id: 'recovery-tea-1', type: 'utility', name: 'Metabolic Recovery Infusion', description: 'Accelerates muscle recovery during deep rest.', cost: 30, preview: '🍵 Tea', purchased: false, effect: 'fatigue_reduce_minor' },
+  { id: 'stability-band-1', type: 'utility', name: 'Elastic Stability Band', description: 'Protects joints during high-load pushups and squats.', cost: 60, preview: '🎗️ Band', purchased: false, effect: 'injury_protection' },
+  { id: 'wrist-straps-1', type: 'utility', name: 'Heavy Duty Wrist Straps', description: 'Provides grip stabilization for pull-ups and hangs.', cost: 70, preview: '🩹 Straps', purchased: false, effect: 'injury_protection' },
+  { id: 'chalk-bag-1', type: 'utility', name: 'Monarch Grip Chalk', description: 'Dries sweat to maximize pull-up and muscle-up grip.', cost: 35, preview: '⚪ Chalk', purchased: false, effect: 'injury_protection' },
+  { id: 'hot-cold-pack-1', type: 'utility', name: 'Thermal Gel Compress', description: 'Soothes inflammation in shoulders and lower back.', cost: 45, preview: '🧊 Gel', purchased: false, effect: 'fatigue_reduce_minor' },
+  { id: 'reaction-pot-1', type: 'utility', name: 'Neural Reflex Catalyst', description: 'Uncommon Grade. Temporarily boosts reaction accuracy by 10%.', cost: 80, preview: '🧪 Reflex', purchased: false, effect: 'stat_boost_reaction' },
+  { id: 'speed-pill-1', type: 'utility', name: 'Velocity Enhancer', description: 'Uncommon Grade. Unlocks temporary sprint efficiency.', cost: 75, preview: '💊 Speed', purchased: false, effect: 'stat_boost_agility' },
+  { id: 'sleep-mask-1', type: 'utility', name: 'Circadian Shield Mask', description: 'Blocks out light to improve sleep depth and quality.', cost: 50, preview: '🕶️ Sleep', purchased: false, effect: 'sleep_enhance' },
+  { id: 'blue-light-block-1', type: 'utility', name: 'Blue-Light Neural Filters', description: 'Reduces screen fatigue and improves digital focus.', cost: 90, preview: '👓 Filters', purchased: false, effect: 'screen_time_buffer' },
+  { id: 'grip-trainer-1', type: 'utility', name: 'Apex Grip Spring', description: 'Uncommon tool to build forearm strength and durability.', cost: 85, preview: '✊ Grip', purchased: false, effect: 'stat_boost_strength' },
+  { id: 'jump-rope-heavy-1', type: 'utility', name: 'Weighted Cable Jump Rope', description: 'Uncommon tool to elevate conditioning and stamina.', cost: 100, preview: '➰ Rope', purchased: false, effect: 'stat_boost_endurance' },
+  { id: 'posture-align-1', type: 'utility', name: 'Spinal Orthotic Align', description: 'Improves seating posture during focus work.', cost: 110, preview: '🥋 Align', purchased: false, effect: 'injury_protection' },
+  { id: 'foam-roller-1', type: 'utility', name: 'High-Density Foam Roller', description: 'Uncommon tool to perform deep self-myofascial release.', cost: 95, preview: '🪵 Roller', purchased: false, effect: 'fatigue_reduce' },
+  { id: 'massage-ball-1', type: 'utility', name: 'Trigger Point Massage Ball', description: 'Targets specific tight spots in upper back and glutes.', cost: 65, preview: '🥎 Ball', purchased: false, effect: 'fatigue_reduce_minor' },
+  { id: 'magnesium-spray-1', type: 'utility', name: 'Pure Magnesium Transdermal', description: 'Spray on muscles to prevent cramps and promote rest.', cost: 70, preview: '🧴 Spray', purchased: false, effect: 'sleep_enhance' },
+  { id: 'zinc-matrix-1', type: 'utility', name: 'Metabolic Zinc Matrix', description: 'Promotes cellular recovery and immunity strength.', cost: 60, preview: '💊 Zinc', purchased: false, effect: 'fatigue_reduce_minor' },
+  { id: 'creatine-charge-1', type: 'utility', name: 'ATP Creatine Charge', description: 'Uncommon cell hydrator for explosive muscle energy.', cost: 120, preview: '🧪 ATP', purchased: false, effect: 'stat_boost_strength' },
+  { id: 'gravity-ring-1', type: 'utility', name: 'Gravity Ring Simulator', description: 'Rare Grade. Simulates heavy load training for double strength XP.', cost: 150, preview: '💍 Ring', purchased: false, effect: 'xp_boost_strength' },
+  { id: 'willpower-matrix-1', type: 'utility', name: 'Resolute Willpower Matrix', description: 'Rare core enhancer. Keeps streaks alive through relapses.', cost: 140, preview: '💠 Will', purchased: false, effect: 'streak_shield' },
+  { id: 'digital-lock-key-1', type: 'utility', name: 'Digital Lockout Encryption Key', description: 'Rare tool. Restricts screen time access for digital detox.', cost: 130, preview: '🔑 Lock', purchased: false, effect: 'screen_time_buffer' },
+  { id: 'stretch-strap-1', type: 'utility', name: 'Multi-loop Flex Strap', description: 'Rare mobility strap to unlock deep range of motion.', cost: 95, preview: '🎗️ Flex', purchased: false, effect: 'stat_boost_recovery' },
+  { id: 'weighted-vest-light-1', type: 'utility', name: '10kg Weighted Tact Vest', description: 'Rare conditioning apparatus. Enhances calisthenic quests.', cost: 180, preview: '🎽 Vest', purchased: false, effect: 'xp_boost_all' },
+  { id: 'electrolyte-tub-1', type: 'utility', name: 'Hydration Osmolarity Tub', description: 'Rare grade cellular hydration matrix. Fatigue drops 15%.', cost: 125, preview: '🫙 Tub', purchased: false, effect: 'fatigue_reduce' },
+  { id: 'sleep-pot-deep-1', type: 'utility', name: 'Somniferous Sleep Essence', description: 'Rare potion that guarantees deep REM cycles. Fatigue -25%.', cost: 110, preview: '🧪 Somn', purchased: false, effect: 'sleep_enhance' },
+  { id: 'focus-booster-pro-1', type: 'utility', name: 'Cognitive Flow Catalyst', description: 'Rare mental booster. Multiplies focus quest gains by 1.25x.', cost: 135, preview: '🧪 Flow', purchased: false, effect: 'xp_boost_focus' },
+  { id: 'omega-capsules-1', type: 'utility', name: 'High-Potency Omega Complex', description: 'Rare cognitive and joint health regulator.', cost: 100, preview: '💊 Omega', purchased: false, effect: 'fatigue_reduce_minor' },
+  { id: 'caffeine-strip-1', type: 'utility', name: 'Sublingual Caffeine Strips', description: 'Rare instant stim strips. Zero sugar, instant focus.', cost: 80, preview: '🎟️ Strips', purchased: false, effect: 'stat_boost_focus' },
+  { id: 'monarch-core-charger-1', type: 'utility', name: 'Monarch Core Charger', description: 'Epic Grade. Restores daily stamina and reduces fatigue by 40%.', cost: 250, preview: '⚡ Charger', purchased: false, effect: 'fatigue_reduce' },
+  { id: 'resonance-crystal-1', type: 'utility', name: 'Resonance Energy Crystal', description: 'Epic Grade. Increases stat gain rate by 15% for 48 hours.', cost: 220, preview: '🔮 Crystal', purchased: false, effect: 'xp_boost_all' },
+  { id: 'time-dilator-1', type: 'utility', name: 'Chronos Time Dilator', description: 'Epic Grade. Postpones daily quest expiration by 6 hours.', cost: 300, preview: '⏳ Chronos', purchased: false, effect: 'quest_postpone' },
+  { id: 'resolution-anchor-1', type: 'utility', name: 'Iron Resolution Anchor', description: 'Epic anchor. Prevents rank degradation during inactive days.', cost: 280, preview: '⚓ Anchor', purchased: false, effect: 'rank_shield' },
+  { id: 'void-catalyst-1', type: 'utility', name: 'Void Energy Catalyst', description: 'Epic potion. Exchanges 20% fatigue for 100 instant XP.', cost: 260, preview: '🧪 Void', purchased: false, effect: 'fatigue_to_xp' },
+  { id: 'digital-shield-1', type: 'utility', name: 'Screen Shield Encryption Matrix', description: 'Epic shield. Fully immunizes screen time penalties for 3 days.', cost: 240, preview: '🛡️ Shield', purchased: false, effect: 'screen_time_immune' },
+  { id: 'weighted-vest-heavy-1', type: 'utility', name: '20kg Heavy Core Vest', description: 'Epic resistance gear. Multiplies all physical XP by 1.5x.', cost: 350, preview: '🎽 Heavy', purchased: false, effect: 'xp_boost_all' },
+  { id: 'shadow-beacon-1', type: 'utility', name: 'Shadow Beacon summoner', description: 'Epic summoner. Forces an immediate S-Rank Dungeon gate opening.', cost: 400, preview: '🚨 Beacon', purchased: false, effect: 'dungeon_key' },
+  { id: 'shadow-extract-1', type: 'utility', name: 'Purified Shadow Extract', description: 'Legendary elixir. Grants immediate level elevation (+1 level).', cost: 500, preview: '🧪 Extract', purchased: false, effect: 'level_elevate' },
+  { id: 'aether-tonic-1', type: 'utility', name: 'Aetherial Recovery Tonic', description: 'Legendary elixir. Instantly clears all fatigue (reduces to 0%).', cost: 450, preview: '🧪 Aether', purchased: false, effect: 'fatigue_clear' },
+  { id: 'rulers-decree-1', type: 'utility', name: "Ruler's Authority Decree", description: 'Legendary Decree. Instantly completes any one active quest.', cost: 600, preview: '📜 Decree', purchased: false, effect: 'quest_auto_complete' },
+  { id: 'light-speed-pot-1', type: 'utility', name: 'Light-speed Agility Potion', description: 'Legendary catalyst. Increases agility gains by 50% for 3 days.', cost: 550, preview: '🧪 Light', purchased: false, effect: 'xp_boost_agility' },
+  { id: 'divine-recovery-1', type: 'utility', name: 'Divine Elixir of Rest', description: 'Legendary elixir. Restores complete metabolic systems and sleep quality.', cost: 480, preview: '🧪 Divine', purchased: false, effect: 'fatigue_clear' },
+  { id: 'absolute-core-1', type: 'utility', name: 'Core of the Absolute Creator', description: 'Mythic Core. Grants permanent +10% modifier to all XP channels.', cost: 1000, preview: '💎 Absolute', purchased: false, effect: 'xp_permanent_boost' },
+  { id: 'elixir-of-life-1', type: 'utility', name: 'Sacred Elixir of Life', description: 'Mythic Elixir. Restores profile stats, clears fatigue, cures all penalties.', cost: 900, preview: '🧪 Life', purchased: false, effect: 'all_cure' },
+  { id: 'monarch-soul-stone-1', type: 'utility', name: 'Monarch Soul Stone', description: 'Mythic Stone. Unlocks the "Apex Sovereign" exclusive profile title.', cost: 1200, preview: '🪨 Soul', purchased: false, effect: 'title_unlock_sovereign' },
+  { id: 'eternity-matrix-1', type: 'utility', name: 'Eternity System Matrix', description: 'Mythic matrix. Allows instant level elevation by 3 levels.', cost: 1500, preview: '🌌 Eternity', purchased: false, effect: 'level_elevate_three' },
 ];
 
 // ============================================================
@@ -489,30 +493,118 @@ export function generateDailyQuests(profile?: PlayerProfile | null): Quest[] {
 export function createDefaultAchievements(): Achievement[] {
   return [
     { id: 'ach-first-blood', name: 'First Blood', description: 'Complete your first SYSTEM quest', tier: 'bronze', unlocked: false, hidden: false, progress: 0, maxProgress: 1, condition: 'first_workout' },
-    { id: 'ach-streak-master', name: 'Streak Master', description: 'Maintain a 7-day streak', tier: 'bronze', unlocked: false, hidden: false, progress: 0, maxProgress: 7, condition: 'streak_7' },
-    { id: 'ach-iron-will', name: 'Iron Will', description: 'Maintain a 30-day streak', tier: 'silver', unlocked: false, hidden: false, progress: 0, maxProgress: 30, condition: 'streak_30' },
-    { id: 'ach-monarch-discipline', name: 'Monarch Discipline', description: 'Maintain a 90-day streak', tier: 'gold', unlocked: false, hidden: false, progress: 0, maxProgress: 90, condition: 'streak_90' },
-    { id: 'ach-dungeon-cleared', name: 'Dungeon Master', description: 'Clear 10 Dungeons', tier: 'gold', unlocked: false, hidden: false, progress: 0, maxProgress: 10, condition: 'dungeons_10' },
-    { id: 'ach-c-rank', name: 'Rising Hunter', description: 'Reach C Rank', tier: 'silver', unlocked: false, hidden: false, progress: 0, maxProgress: 1, condition: 'rank_c' },
-    { id: 'ach-shadow-walker', name: 'Shadow Walker', description: '30 days porn-free', tier: 'gold', unlocked: false, hidden: false, progress: 0, maxProgress: 30, condition: 'porn_free_30' },
-    { id: 'ach-the-unbreakable', name: 'The Unbreakable', description: '90 days porn-free', tier: 'platinum', unlocked: false, hidden: false, progress: 0, maxProgress: 90, condition: 'porn_free_90' },
-    { id: 'ach-hunter', name: 'Hunter', description: 'Reach B Rank', tier: 'platinum', unlocked: false, hidden: false, progress: 0, maxProgress: 1, condition: 'rank_b' },
-    { id: 'ach-monarch', name: 'Monarch', description: 'Reach Monarch Level', tier: 'mythic', unlocked: false, hidden: true, progress: 0, maxProgress: 1, condition: 'rank_monarch' },
-    { id: 'ach-shadow-monarch', name: 'Shadow Monarch', description: 'Reach the pinnacle — Shadow Monarch', tier: 'mythic', unlocked: false, hidden: true, progress: 0, maxProgress: 1, condition: 'rank_shadow_monarch' },
+    { id: 'ach-streak-3', name: 'Initiate Streak', description: 'Maintain a 3-day streak of daily quests', tier: 'bronze', unlocked: false, hidden: false, progress: 0, maxProgress: 3, condition: 'streak_3' },
+    { id: 'ach-streak-7', name: 'Streak Novice', description: 'Maintain a 7-day streak of daily quests', tier: 'bronze', unlocked: false, hidden: false, progress: 0, maxProgress: 7, condition: 'streak_7' },
+    { id: 'ach-streak-14', name: 'Core Builder', description: 'Maintain a 14-day streak of daily quests', tier: 'silver', unlocked: false, hidden: false, progress: 0, maxProgress: 14, condition: 'streak_14' },
+    { id: 'ach-streak-30', name: 'Iron Will', description: 'Maintain a 30-day streak of daily quests', tier: 'silver', unlocked: false, hidden: false, progress: 0, maxProgress: 30, condition: 'streak_30' },
+    { id: 'ach-streak-45', name: 'Resolute Vanguard', description: 'Maintain a 45-day streak of daily quests', tier: 'gold', unlocked: false, hidden: false, progress: 0, maxProgress: 45, condition: 'streak_45' },
+    { id: 'ach-streak-60', name: 'Discipline Master', description: 'Maintain a 60-day streak of daily quests', tier: 'gold', unlocked: false, hidden: false, progress: 0, maxProgress: 60, condition: 'streak_60' },
+    { id: 'ach-streak-90', name: 'Monarch Discipline', description: 'Maintain a 90-day streak of daily quests', tier: 'platinum', unlocked: false, hidden: false, progress: 0, maxProgress: 90, condition: 'streak_90' },
+    { id: 'ach-streak-120', name: 'Fortified Mind', description: 'Maintain a 120-day streak of daily quests', tier: 'platinum', unlocked: false, hidden: false, progress: 0, maxProgress: 120, condition: 'streak_120' },
+    { id: 'ach-streak-180', name: 'Eternal Warrior', description: 'Maintain a 180-day streak of daily quests', tier: 'diamond', unlocked: false, hidden: false, progress: 0, maxProgress: 180, condition: 'streak_180' },
+    { id: 'ach-streak-365', name: 'Apex Ascendant', description: 'Maintain a 365-day streak of daily quests', tier: 'mythic', unlocked: false, hidden: false, progress: 0, maxProgress: 365, condition: 'streak_365' },
+    { id: 'ach-dungeon-1', name: 'Gate Opener', description: 'Clear your first Dungeon', tier: 'bronze', unlocked: false, hidden: false, progress: 0, maxProgress: 1, condition: 'dungeons_1' },
+    { id: 'ach-dungeons-5', name: 'Raid Recruit', description: 'Clear 5 Dungeons', tier: 'silver', unlocked: false, hidden: false, progress: 0, maxProgress: 5, condition: 'dungeons_5' },
+    { id: 'ach-dungeons-10', name: 'Dungeon Master', description: 'Clear 10 Dungeons', tier: 'gold', unlocked: false, hidden: false, progress: 0, maxProgress: 10, condition: 'dungeons_10' },
+    { id: 'ach-dungeons-25', name: 'Gate Conqueror', description: 'Clear 25 Dungeons', tier: 'platinum', unlocked: false, hidden: false, progress: 0, maxProgress: 25, condition: 'dungeons_25' },
+    { id: 'ach-dungeons-50', name: 'Abyss Cleanser', description: 'Clear 50 Dungeons', tier: 'diamond', unlocked: false, hidden: false, progress: 0, maxProgress: 50, condition: 'dungeons_50' },
+    { id: 'ach-dungeons-100', name: 'Sovereign Slayer', description: 'Clear 100 Dungeons', tier: 'legendary', unlocked: false, hidden: false, progress: 0, maxProgress: 100, condition: 'dungeons_100' },
+    { id: 'ach-level-5', name: 'Operator Awakening', description: 'Reach Level 5', tier: 'bronze', unlocked: false, hidden: false, progress: 0, maxProgress: 5, condition: 'level_5' },
+    { id: 'ach-level-10', name: 'Limit Breaker', description: 'Reach Level 10', tier: 'silver', unlocked: false, hidden: false, progress: 0, maxProgress: 10, condition: 'level_10' },
+    { id: 'ach-level-15', name: 'Ascending Power', description: 'Reach Level 15', tier: 'silver', unlocked: false, hidden: false, progress: 0, maxProgress: 15, condition: 'level_15' },
+    { id: 'ach-level-20', name: 'Core Resonance', description: 'Reach Level 20', tier: 'gold', unlocked: false, hidden: false, progress: 0, maxProgress: 20, condition: 'level_20' },
+    { id: 'ach-level-30', name: 'Unstoppable Force', description: 'Reach Level 30', tier: 'platinum', unlocked: false, hidden: false, progress: 0, maxProgress: 30, condition: 'level_30' },
+    { id: 'ach-level-50', name: 'Titan Class', description: 'Reach Level 50', tier: 'diamond', unlocked: false, hidden: false, progress: 0, maxProgress: 50, condition: 'level_50' },
+    { id: 'ach-level-75', name: 'Immortal Vessel', description: 'Reach Level 75', tier: 'legendary', unlocked: false, hidden: false, progress: 0, maxProgress: 75, condition: 'level_75' },
+    { id: 'ach-level-100', name: 'Apex Sovereign', description: 'Reach Level 100', tier: 'mythic', unlocked: false, hidden: false, progress: 0, maxProgress: 100, condition: 'level_100' },
+    { id: 'ach-porn-free-3', name: 'Purified Vision', description: 'Maintain a 3-day porn-free streak', tier: 'bronze', unlocked: false, hidden: false, progress: 0, maxProgress: 3, condition: 'porn_free_3' },
+    { id: 'ach-porn-free-7', name: 'Shadow Resister', description: 'Maintain a 7-day porn-free streak', tier: 'bronze', unlocked: false, hidden: false, progress: 0, maxProgress: 7, condition: 'porn_free_7' },
+    { id: 'ach-porn-free-14', name: 'Fortress of Mind', description: 'Maintain a 14-day porn-free streak', tier: 'silver', unlocked: false, hidden: false, progress: 0, maxProgress: 14, condition: 'porn_free_14' },
+    { id: 'ach-porn-free-30', name: 'Shadow Walker', description: 'Maintain a 30-day porn-free streak', tier: 'gold', unlocked: false, hidden: false, progress: 0, maxProgress: 30, condition: 'porn_free_30' },
+    { id: 'ach-porn-free-60', name: 'Grave Conqueror', description: 'Maintain a 60-day porn-free streak', tier: 'gold', unlocked: false, hidden: false, progress: 0, maxProgress: 60, condition: 'porn_free_60' },
+    { id: 'ach-porn-free-90', name: 'The Unbreakable', description: 'Maintain a 90-day porn-free streak', tier: 'platinum', unlocked: false, hidden: false, progress: 0, maxProgress: 90, condition: 'porn_free_90' },
+    { id: 'ach-porn-free-180', name: 'Purity Incarnate', description: 'Maintain a 180-day porn-free streak', tier: 'diamond', unlocked: false, hidden: false, progress: 0, maxProgress: 180, condition: 'porn_free_180' },
+    { id: 'ach-porn-free-365', name: 'Ascended Soul', description: 'Maintain a 365-day porn-free streak', tier: 'mythic', unlocked: false, hidden: false, progress: 0, maxProgress: 365, condition: 'porn_free_365' },
+    { id: 'ach-rank-e', name: 'Lowest Class', description: 'Obtain E Rank status', tier: 'bronze', unlocked: false, hidden: false, progress: 0, maxProgress: 1, condition: 'rank_e' },
+    { id: 'ach-rank-d', name: 'Awakened Hunter', description: 'Reach D Rank', tier: 'bronze', unlocked: false, hidden: false, progress: 0, maxProgress: 1, condition: 'rank_d' },
+    { id: 'ach-rank-c', name: 'Rising Hunter', description: 'Reach C Rank', tier: 'silver', unlocked: false, hidden: false, progress: 0, maxProgress: 1, condition: 'rank_c' },
+    { id: 'ach-rank-b', name: 'Hunter Class', description: 'Reach B Rank', tier: 'platinum', unlocked: false, hidden: false, progress: 0, maxProgress: 1, condition: 'rank_b' },
+    { id: 'ach-rank-a', name: 'Vanguard Raider', description: 'Reach A Rank', tier: 'diamond', unlocked: false, hidden: false, progress: 0, maxProgress: 1, condition: 'rank_a' },
+    { id: 'ach-rank-s', name: 'S-Rank Elite', description: 'Reach S Rank', tier: 'legendary', unlocked: false, hidden: false, progress: 0, maxProgress: 1, condition: 'rank_s' },
+    { id: 'ach-rank-national', name: 'National Authority', description: 'Reach National Rank', tier: 'legendary', unlocked: false, hidden: false, progress: 0, maxProgress: 1, condition: 'rank_national' },
+    { id: 'ach-rank-monarch', name: 'Monarch Divine', description: 'Reach Monarch Level', tier: 'mythic', unlocked: false, hidden: true, progress: 0, maxProgress: 1, condition: 'rank_monarch' },
+    { id: 'ach-rank-shadow-monarch', name: 'Shadow Sovereign', description: 'Reach the pinnacle — Shadow Monarch', tier: 'mythic', unlocked: false, hidden: true, progress: 0, maxProgress: 1, condition: 'rank_shadow_monarch' },
+    { id: 'ach-coin-100', name: 'Treasure Seeker', description: 'Earn 100 total Coins', tier: 'bronze', unlocked: false, hidden: false, progress: 0, maxProgress: 100, condition: 'coins_100' },
+    { id: 'ach-coin-500', name: 'Merchant Class', description: 'Earn 500 total Coins', tier: 'silver', unlocked: false, hidden: false, progress: 0, maxProgress: 500, condition: 'coins_500' },
+    { id: 'ach-coin-1000', name: 'Vault Keeper', description: 'Earn 1,000 total Coins', tier: 'gold', unlocked: false, hidden: false, progress: 0, maxProgress: 1000, condition: 'coins_1000' },
+    { id: 'ach-coin-5000', name: 'Golden Sovereign', description: 'Earn 5,000 total Coins', tier: 'platinum', unlocked: false, hidden: false, progress: 0, maxProgress: 5000, condition: 'coins_5000' },
+    { id: 'ach-coin-10000', name: 'Monarchy Treasury', description: 'Earn 10,000 total Coins', tier: 'diamond', unlocked: false, hidden: false, progress: 0, maxProgress: 10000, condition: 'coins_10000' },
+    { id: 'ach-upskill-1', name: 'Adaptability Unlocked', description: 'Acquire 1 Upskill Module', tier: 'silver', unlocked: false, hidden: false, progress: 0, maxProgress: 1, condition: 'upskill_1' },
+    { id: 'ach-upskill-3', name: 'Multi-threaded Operator', description: 'Acquire 3 Upskill Modules', tier: 'gold', unlocked: false, hidden: false, progress: 0, maxProgress: 3, condition: 'upskill_3' },
+    { id: 'ach-upskill-5', name: 'Complete Synchronization', description: 'Acquire all 5 Upskill Modules', tier: 'platinum', unlocked: false, hidden: false, progress: 0, maxProgress: 5, condition: 'upskill_5' },
+    { id: 'ach-fatigue-zero', name: 'Perfect Restoration', description: 'Clear player fatigue to 0% 5 times', tier: 'silver', unlocked: false, hidden: false, progress: 0, maxProgress: 5, condition: 'fatigue_zero_5' },
+    { id: 'ach-evaluation-first', name: 'Proven Class', description: 'Pass your first Rank Evaluation trial', tier: 'silver', unlocked: false, hidden: false, progress: 0, maxProgress: 1, condition: 'eval_pass_1' },
+    { id: 'ach-quest-fifty', name: 'Iron Laborer', description: 'Complete 50 total side/daily quests', tier: 'gold', unlocked: false, hidden: false, progress: 0, maxProgress: 50, condition: 'quests_50' },
+    { id: 'ach-monarch-will', name: 'Apex Sovereign Will', description: 'Complete 500 total side/daily quests', tier: 'mythic', unlocked: false, hidden: false, progress: 0, maxProgress: 500, condition: 'quests_500' },
   ];
 }
 
 export function createDefaultTitles(): Title[] {
   return [
     { id: 'title-beginner', name: 'The Beginner', description: 'Starting title given to all Players', equipped: true, unlocked: true, bonus: 'None', tier: 'bronze', condition: 'initial_scan' },
+    { id: 'title-streak-3', name: 'Resolute Initiate', description: 'Completed a 3-day daily quest streak', equipped: false, unlocked: false, bonus: '+2% Discipline XP', tier: 'bronze', condition: 'streak_3' },
     { id: 'title-disciplined', name: 'Disciplined', description: 'Maintained a 7-day streak', equipped: false, unlocked: false, bonus: '+5% Discipline XP', tier: 'bronze', condition: 'streak_7' },
-    { id: 'title-iron-arms', name: 'Iron Arms', description: 'Completed 50 push-ups', equipped: false, unlocked: false, bonus: '+5% Strength XP', tier: 'silver', condition: 'pushups_50' },
-    { id: 'title-swift', name: 'Swift Runner', description: 'Sub-300ms reaction time', equipped: false, unlocked: false, bonus: '+5% Agility XP', tier: 'silver', condition: 'reaction_300' },
-    { id: 'title-steel-core', name: 'Steel Core', description: '3-minute plank holder', equipped: false, unlocked: false, bonus: '+5% Endurance XP', tier: 'silver', condition: 'plank_180' },
+    { id: 'title-core-builder', name: 'Core Builder', description: 'Completed a 14-day daily quest streak', equipped: false, unlocked: false, bonus: '+6% Strength XP', tier: 'silver', condition: 'streak_14' },
+    { id: 'title-iron-will', name: 'Iron Will', description: 'Maintained a 30-day streak', equipped: false, unlocked: false, bonus: '+8% Focus XP', tier: 'silver', condition: 'streak_30' },
+    { id: 'title-vanguard-streak', name: 'Resolute Vanguard', description: 'Completed a 45-day daily quest streak', equipped: false, unlocked: false, bonus: '+10% Combat XP', tier: 'gold', condition: 'streak_45' },
+    { id: 'title-disc-master', name: 'Discipline Master', description: 'Completed a 60-day daily quest streak', equipped: false, unlocked: false, bonus: '+12% Recovery XP', tier: 'gold', condition: 'streak_60' },
+    { id: 'title-monarch-disc', name: 'Monarch Discipline', description: 'Maintained a 90-day streak', equipped: false, unlocked: false, bonus: '+15% All XP', tier: 'platinum', condition: 'streak_90' },
+    { id: 'title-fortified-mind', name: 'Fortified Mind', description: 'Completed a 120-day daily quest streak', equipped: false, unlocked: false, bonus: '+15% Focus XP', tier: 'platinum', condition: 'streak_120' },
+    { id: 'title-eternal-war', name: 'Eternal Warrior', description: 'Completed a 180-day daily quest streak', equipped: false, unlocked: false, bonus: '+18% Endurance XP', tier: 'diamond', condition: 'streak_180' },
+    { id: 'title-apex-ascendant', name: 'Apex Ascendant', description: 'Completed a 365-day daily quest streak', equipped: false, unlocked: false, bonus: '+25% All XP', tier: 'mythic', condition: 'streak_365' },
+    { id: 'title-gate-opener', name: 'Gate Opener', description: 'Cleared your first Dungeon challenge', equipped: false, unlocked: false, bonus: '+3% Dungeon Coins', tier: 'bronze', condition: 'dungeons_1' },
+    { id: 'title-raid-recruit', name: 'Raid Recruit', description: 'Cleared 5 Dungeons', equipped: false, unlocked: false, bonus: '+5% Dungeon Coins', tier: 'silver', condition: 'dungeons_5' },
     { id: 'title-dungeon-conqueror', name: 'Dungeon Conqueror', description: 'Cleared 10 Dungeons', equipped: false, unlocked: false, bonus: '+10% Dungeon XP', tier: 'gold', condition: 'dungeons_10' },
+    { id: 'title-gate-conqueror', name: 'Gate Conqueror', description: 'Cleared 25 Dungeons', equipped: false, unlocked: false, bonus: '+12% Dungeon XP & Coins', tier: 'platinum', condition: 'dungeons_25' },
+    { id: 'title-abyss-cleanser', name: 'Abyss Cleanser', description: 'Cleared 50 Dungeons', equipped: false, unlocked: false, bonus: '+15% Dungeon XP', tier: 'diamond', condition: 'dungeons_50' },
+    { id: 'title-sovereign-slayer', name: 'Sovereign Slayer', description: 'Cleared 100 Dungeons', equipped: false, unlocked: false, bonus: '+20% All Dungeon Rewards', tier: 'legendary', condition: 'dungeons_100' },
+    { id: 'title-op-awakening', name: 'Operator Awakening', description: 'Reached Player level 5', equipped: false, unlocked: false, bonus: '+2% All XP', tier: 'bronze', condition: 'level_5' },
+    { id: 'title-limit-breaker', name: 'Limit Breaker', description: 'Reached Player level 10', equipped: false, unlocked: false, bonus: '+5% All XP', tier: 'silver', condition: 'level_10' },
+    { id: 'title-ascending-pow', name: 'Ascending Power', description: 'Reached Player level 15', equipped: false, unlocked: false, bonus: '+6% Strength XP', tier: 'silver', condition: 'level_15' },
+    { id: 'title-core-resonance', name: 'Core Resonance', description: 'Reached Player level 20', equipped: false, unlocked: false, bonus: '+8% All XP', tier: 'gold', condition: 'level_20' },
+    { id: 'title-unstoppable-force', name: 'Unstoppable Force', description: 'Reached Player level 30', equipped: false, unlocked: false, bonus: '+10% All XP', tier: 'platinum', condition: 'level_30' },
+    { id: 'title-titan-class', name: 'Titan Class', description: 'Reached Player level 50', equipped: false, unlocked: false, bonus: '+12% All XP', tier: 'diamond', condition: 'level_50' },
+    { id: 'title-immortal-vessel', name: 'Immortal Vessel', description: 'Reached Player level 75', equipped: false, unlocked: false, bonus: '+18% All XP', tier: 'legendary', condition: 'level_75' },
+    { id: 'title-apex-sovereign', name: 'Apex Sovereign', description: 'Reached Player level 100', equipped: false, unlocked: false, bonus: '+25% All XP', tier: 'mythic', condition: 'level_100' },
+    { id: 'title-purified-vision', name: 'Purified Vision', description: 'Porn-free streak of 3 days', equipped: false, unlocked: false, bonus: '+3% Discipline XP', tier: 'bronze', condition: 'porn_free_3' },
+    { id: 'title-shadow-resister', name: 'Shadow Resister', description: 'Porn-free streak of 7 days', equipped: false, unlocked: false, bonus: '+5% Discipline XP', tier: 'bronze', condition: 'porn_free_7' },
+    { id: 'title-fortress-mind', name: 'Fortress of Mind', description: 'Porn-free streak of 14 days', equipped: false, unlocked: false, bonus: '+6% Focus XP', tier: 'silver', condition: 'porn_free_14' },
+    { id: 'title-shadow-walker', name: 'Shadow Walker', description: 'Porn-free streak of 30 days', equipped: false, unlocked: false, bonus: '+8% Focus XP', tier: 'gold', condition: 'porn_free_30' },
+    { id: 'title-grave-conq', name: 'Grave Conqueror', description: 'Porn-free streak of 60 days', equipped: false, unlocked: false, bonus: '+10% Focus XP', tier: 'gold', condition: 'porn_free_60' },
+    { id: 'title-the-unbreakable', name: 'The Unbreakable', description: 'Porn-free streak of 90 days', equipped: false, unlocked: false, bonus: '+12% All XP', tier: 'platinum', condition: 'porn_free_90' },
+    { id: 'title-purity-inc', name: 'Purity Incarnate', description: 'Porn-free streak of 180 days', equipped: false, unlocked: false, bonus: '+15% All XP', tier: 'diamond', condition: 'porn_free_180' },
+    { id: 'title-ascended-soul', name: 'Ascended Soul', description: 'Porn-free streak of 365 days', equipped: false, unlocked: false, bonus: '+25% All XP', tier: 'mythic', condition: 'porn_free_365' },
+    { id: 'title-rank-e', name: 'E-Rank Scrap', description: 'Classified E-Rank Operator', equipped: false, unlocked: false, bonus: 'None', tier: 'bronze', condition: 'rank_e' },
+    { id: 'title-rank-d', name: 'D-Rank Awakened', description: 'Reached D-Rank Operator', equipped: false, unlocked: false, bonus: '+2% All XP', tier: 'bronze', condition: 'rank_d' },
     { id: 'title-elite', name: 'Elite Athlete', description: 'Reached C Rank', equipped: false, unlocked: false, bonus: '+10% All XP', tier: 'gold', condition: 'rank_c' },
     { id: 'title-hunter', name: 'Hunter', description: 'Reached B Rank', equipped: false, unlocked: false, bonus: '+15% All XP', tier: 'platinum', condition: 'rank_b' },
+    { id: 'title-vanguard-raider', name: 'Vanguard Raider', description: 'Reached A Rank', equipped: false, unlocked: false, bonus: '+18% All XP', tier: 'diamond', condition: 'rank_a' },
+    { id: 'title-s-rank-elite', name: 'S-Rank Elite', description: 'Reached S Rank', equipped: false, unlocked: false, bonus: '+20% All XP', tier: 'legendary', condition: 'rank_s' },
+    { id: 'title-national', name: 'National Authority', description: 'Reached National Rank', equipped: false, unlocked: false, bonus: '+22% All XP', tier: 'legendary', condition: 'rank_national' },
+    { id: 'title-monarch', name: 'Monarch Sovereign', description: 'Reached Monarch Rank', equipped: false, unlocked: false, bonus: '+24% All XP', tier: 'mythic', condition: 'rank_monarch' },
     { id: 'title-shadow-monarch', name: 'Shadow Monarch', description: 'Reached the pinnacle', equipped: false, unlocked: false, bonus: '+25% All XP', tier: 'mythic', condition: 'rank_shadow_monarch' },
+    { id: 'title-coin-100', name: 'Treasure Seeker', description: 'Earned 100 total Coins', equipped: false, unlocked: false, bonus: '+2% Shop Discount', tier: 'bronze', condition: 'coins_100' },
+    { id: 'title-coin-500', name: 'Merchant Class', description: 'Earned 500 total Coins', equipped: false, unlocked: false, bonus: '+4% Shop Discount', tier: 'silver', condition: 'coins_500' },
+    { id: 'title-coin-1000', name: 'Vault Keeper', description: 'Earned 1,000 total Coins', equipped: false, unlocked: false, bonus: '+6% Shop Discount', tier: 'gold', condition: 'coins_1000' },
+    { id: 'title-coin-5000', name: 'Golden Sovereign', description: 'Earned 5,000 total Coins', equipped: false, unlocked: false, bonus: '+8% Shop Discount', tier: 'platinum', condition: 'coins_5000' },
+    { id: 'title-coin-10000', name: 'Monarchy Treasury', description: 'Earned 10,000 total Coins', equipped: false, unlocked: false, bonus: '+10% Shop Discount', tier: 'diamond', condition: 'coins_10000' },
+    { id: 'title-upskill-1', name: 'Adaptable Raider', description: 'Acquired 1 Upskill Module', equipped: false, unlocked: false, bonus: '+3% Stat XP gains', tier: 'silver', condition: 'upskill_1' },
+    { id: 'title-upskill-3', name: 'System Adaptor', description: 'Acquired 3 Upskill Modules', equipped: false, unlocked: false, bonus: '+6% Stat XP gains', tier: 'gold', condition: 'upskill_3' },
+    { id: 'title-upskill-5', name: 'Sovereign Adaptor', description: 'Acquired all 5 Upskill Modules', equipped: false, unlocked: false, bonus: '+10% Stat XP gains', tier: 'platinum', condition: 'upskill_5' },
+    { id: 'title-perf-rest', name: 'Restoration Catalyst', description: 'Cleared fatigue to 0% 5 times', equipped: false, unlocked: false, bonus: '-5% Base Fatigue Accumulation', tier: 'silver', condition: 'fatigue_zero_5' },
+    { id: 'title-proven', name: 'Proven Class', description: 'Passed first Rank Evaluation', equipped: false, unlocked: false, bonus: '+5% Evaluation Quest XP', tier: 'silver', condition: 'eval_pass_1' },
+    { id: 'title-iron-lab', name: 'Iron Laborer', description: 'Completed 50 quests total', equipped: false, unlocked: false, bonus: '+5% Side Quest Coins', tier: 'gold', condition: 'quests_50' },
+    { id: 'title-monarch-will', name: 'Apex Will', description: 'Completed 500 quests total', equipped: false, unlocked: false, bonus: '+15% All Coins & XP', tier: 'mythic', condition: 'quests_500' },
   ];
 }
 
@@ -528,17 +620,57 @@ export function checkAchievementUnlock(
   const condition = achievement.condition;
   
   if (condition === 'first_workout' && workouts >= 1) return true;
+  if (condition === 'streak_3' && profile.streak >= 3) return true;
   if (condition === 'streak_7' && profile.streak >= 7) return true;
+  if (condition === 'streak_14' && profile.streak >= 14) return true;
   if (condition === 'streak_30' && profile.streak >= 30) return true;
+  if (condition === 'streak_45' && profile.streak >= 45) return true;
+  if (condition === 'streak_60' && profile.streak >= 60) return true;
   if (condition === 'streak_90' && profile.streak >= 90) return true;
+  if (condition === 'streak_120' && profile.streak >= 120) return true;
+  if (condition === 'streak_180' && profile.streak >= 180) return true;
+  if (condition === 'streak_365' && profile.streak >= 365) return true;
+  if (condition === 'dungeons_1' && dungeons >= 1) return true;
+  if (condition === 'dungeons_5' && dungeons >= 5) return true;
   if (condition === 'dungeons_10' && dungeons >= 10) return true;
+  if (condition === 'dungeons_25' && dungeons >= 25) return true;
+  if (condition === 'dungeons_50' && dungeons >= 50) return true;
+  if (condition === 'dungeons_100' && dungeons >= 100) return true;
+  if (condition === 'level_5' && profile.totalLevel >= 5) return true;
+  if (condition === 'level_10' && profile.totalLevel >= 10) return true;
+  if (condition === 'level_15' && profile.totalLevel >= 15) return true;
+  if (condition === 'level_20' && profile.totalLevel >= 20) return true;
+  if (condition === 'level_30' && profile.totalLevel >= 30) return true;
+  if (condition === 'level_50' && profile.totalLevel >= 50) return true;
+  if (condition === 'level_75' && profile.totalLevel >= 75) return true;
+  if (condition === 'level_100' && profile.totalLevel >= 100) return true;
+  if (condition === 'porn_free_3' && profile.pornFreeStreak >= 3) return true;
+  if (condition === 'porn_free_7' && profile.pornFreeStreak >= 7) return true;
+  if (condition === 'porn_free_14' && profile.pornFreeStreak >= 14) return true;
+  if (condition === 'porn_free_30' && profile.pornFreeStreak >= 30) return true;
+  if (condition === 'porn_free_60' && profile.pornFreeStreak >= 60) return true;
+  if (condition === 'porn_free_90' && profile.pornFreeStreak >= 90) return true;
+  if (condition === 'porn_free_180' && profile.pornFreeStreak >= 180) return true;
+  if (condition === 'porn_free_365' && profile.pornFreeStreak >= 365) return true;
+  if (condition === 'rank_e' && RANK_ORDER.indexOf(profile.currentRank) >= RANK_ORDER.indexOf('E Rank')) return true;
+  if (condition === 'rank_d' && RANK_ORDER.indexOf(profile.currentRank) >= RANK_ORDER.indexOf('D Rank')) return true;
   if (condition === 'rank_c' && RANK_ORDER.indexOf(profile.currentRank) >= RANK_ORDER.indexOf('C Rank')) return true;
   if (condition === 'rank_b' && RANK_ORDER.indexOf(profile.currentRank) >= RANK_ORDER.indexOf('B Rank')) return true;
+  if (condition === 'rank_a' && RANK_ORDER.indexOf(profile.currentRank) >= RANK_ORDER.indexOf('A Rank')) return true;
+  if (condition === 'rank_s' && RANK_ORDER.indexOf(profile.currentRank) >= RANK_ORDER.indexOf('S Rank')) return true;
+  if (condition === 'rank_national' && RANK_ORDER.indexOf(profile.currentRank) >= RANK_ORDER.indexOf('National Level')) return true;
   if (condition === 'rank_monarch' && profile.currentRank === 'Monarch Level') return true;
   if (condition === 'rank_shadow_monarch' && profile.currentRank === 'Shadow Monarch') return true;
-  if (condition === 'porn_free_30' && profile.pornFreeStreak >= 30) return true;
-  if (condition === 'porn_free_90' && profile.pornFreeStreak >= 90) return true;
-  if (condition === 'porn_free_365' && profile.pornFreeStreak >= 365) return true;
+  if (condition === 'coins_100' && profile.coins >= 100) return true;
+  if (condition === 'coins_500' && profile.coins >= 500) return true;
+  if (condition === 'coins_1000' && profile.coins >= 1000) return true;
+  if (condition === 'coins_5000' && profile.coins >= 5000) return true;
+  if (condition === 'coins_10000' && profile.coins >= 10000) return true;
+  if (condition === 'upskill_1' && (profile.unlockedUpskills || []).length >= 1) return true;
+  if (condition === 'upskill_3' && (profile.unlockedUpskills || []).length >= 3) return true;
+  if (condition === 'upskill_5' && (profile.unlockedUpskills || []).length >= 5) return true;
+  if (condition === 'quests_50' && (workouts + dungeons) >= 50) return true;
+  if (condition === 'quests_500' && (workouts + dungeons) >= 500) return true;
   
   return false;
 }

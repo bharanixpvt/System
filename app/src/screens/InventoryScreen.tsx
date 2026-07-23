@@ -28,6 +28,7 @@ const TIER_COLORS: Record<AchievementTier, string> = {
 export function InventoryScreen() {
   const { titles, inventory, achievements, equipTitle, equipItem, navigateTo, activateUtility } = useGameStore();
   const [activeTab, setActiveTab] = useState<InvTab>('titles');
+  const [selectedTierFilter, setSelectedTierFilter] = useState<AchievementTier | 'all'>('all');
 
   return (
     <div className="space-y-4 pb-6">
@@ -59,49 +60,79 @@ export function InventoryScreen() {
       </div>
 
       {/* Content */}
+      {/* Content */}
       {activeTab === 'titles' && (
-        <div className="space-y-2">
-          {titles.map((title, i) => (
-            <motion.div
-              key={title.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              onClick={() => title.unlocked && equipTitle(title.id)}
-              className={`glass-card p-3.5 flex items-center justify-between transition-all ${
-                title.unlocked ? 'cursor-pointer hover:border-white/15' : 'opacity-40'
-              } ${title.equipped ? 'border-[#CBD5E1]/30' : ''}`}
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-10 h-10 rounded-lg flex items-center justify-center"
-                  style={{ backgroundColor: title.unlocked ? `${TIER_COLORS[title.tier]}15` : 'rgba(255,255,255,0.03)' }}
+        <div className="space-y-4">
+          {/* Titles Ladder Progress */}
+          <div className="p-3 bg-white/5 rounded-xl border border-white/10 space-y-2">
+            <p className="text-[10px] uppercase font-bold text-[#CBD5E1] tracking-widest">Titles Unlock Ladder</p>
+            <div className="flex gap-2 overflow-x-auto pb-1 text-[10px]">
+              {(['bronze', 'silver', 'gold', 'platinum', 'diamond', 'legendary', 'mythic'] as AchievementTier[]).map(t => {
+                const total = titles.filter(x => x.tier === t).length;
+                const unlocked = titles.filter(x => x.tier === t && x.unlocked).length;
+                return (
+                  <button
+                    key={t}
+                    onClick={() => { playButtonPress(); setSelectedTierFilter(selectedTierFilter === t ? 'all' : t); }}
+                    className={`px-2 py-1 rounded shrink-0 border capitalize font-semibold transition-all ${
+                      selectedTierFilter === t
+                        ? 'bg-white/15 text-white border-white/30'
+                        : 'bg-white/5 text-white/50 border-transparent hover:bg-white/10'
+                    }`}
+                    style={{ borderColor: selectedTierFilter === t ? TIER_COLORS[t] : undefined }}
+                  >
+                    <span style={{ color: TIER_COLORS[t] }}>●</span> {t}: {unlocked}/{total}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            {titles
+              .filter(title => selectedTierFilter === 'all' || title.tier === selectedTierFilter)
+              .map((title, i) => (
+                <motion.div
+                  key={title.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.03 }}
+                  onClick={() => title.unlocked && equipTitle(title.id)}
+                  className={`glass-card p-3.5 flex items-center justify-between transition-all ${
+                    title.unlocked ? 'cursor-pointer hover:border-white/15' : 'opacity-40'
+                  } ${title.equipped ? 'border-[#CBD5E1]/30' : ''}`}
                 >
-                  <Award size={18} style={{ color: title.unlocked ? TIER_COLORS[title.tier] : 'rgba(255,255,255,0.2)' }} />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-sm font-medium ${!title.unlocked ? 'text-white/30' : ''}`}>{title.name}</span>
-                    <span
-                      className="text-[9px] px-1.5 py-0.5 rounded uppercase font-bold"
-                      style={{ backgroundColor: `${TIER_COLORS[title.tier]}20`, color: TIER_COLORS[title.tier] }}
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-10 h-10 rounded-lg flex items-center justify-center"
+                      style={{ backgroundColor: title.unlocked ? `${TIER_COLORS[title.tier]}15` : 'rgba(255,255,255,0.03)' }}
                     >
-                      {title.tier}
-                    </span>
+                      <Award size={18} style={{ color: title.unlocked ? TIER_COLORS[title.tier] : 'rgba(255,255,255,0.2)' }} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-sm font-medium ${!title.unlocked ? 'text-white/30' : ''}`}>{title.name}</span>
+                        <span
+                          className="text-[9px] px-1.5 py-0.5 rounded uppercase font-bold"
+                          style={{ backgroundColor: `${TIER_COLORS[title.tier]}20`, color: TIER_COLORS[title.tier] }}
+                        >
+                          {title.tier}
+                        </span>
+                      </div>
+                      <p className="text-xs text-white/40">{title.unlocked ? title.description : '???'}</p>
+                      {title.unlocked && (
+                        <p className="text-[10px] text-[#CBD5E1]/60 mt-0.5">{title.bonus}</p>
+                      )}
+                    </div>
                   </div>
-                  <p className="text-xs text-white/40">{title.unlocked ? title.description : '???'}</p>
-                  {title.unlocked && (
-                    <p className="text-[10px] text-[#CBD5E1]/60 mt-0.5">{title.bonus}</p>
+                  {title.equipped && (
+                    <span className="flex items-center gap-1 text-[10px] text-[#CBD5E1]">
+                      <Check size={12} /> Equipped
+                    </span>
                   )}
-                </div>
-              </div>
-              {title.equipped && (
-                <span className="flex items-center gap-1 text-[10px] text-[#CBD5E1]">
-                  <Check size={12} /> Equipped
-                </span>
-              )}
-            </motion.div>
-          ))}
+                </motion.div>
+              ))}
+          </div>
         </div>
       )}
 
@@ -145,45 +176,74 @@ export function InventoryScreen() {
       )}
 
       {activeTab === 'achievements' && (
-        <div className="space-y-2.5">
-          {achievements.map((ach, i) => (
-            <motion.div
-              key={ach.id}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.03, type: 'spring', stiffness: 200, damping: 20 }}
-              className={`glass-card p-3.5 transition-all duration-300 ${
-                ach.unlocked
-                  ? 'hover:border-[#CBD5E1]/20 hover:shadow-lg hover:shadow-[#CBD5E1]/5'
-                  : 'opacity-55'
-              }`}
-            >
-              <div className="flex items-center gap-4">
-                <AnimatedAchievementBadge unlocked={ach.unlocked} tier={ach.tier} hidden={ach.hidden} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className={`text-sm font-semibold truncate ${ach.unlocked ? 'text-white' : 'text-white/40'}`}>
-                      {ach.hidden && !ach.unlocked ? '???' : ach.name}
-                    </span>
-                    <span
-                      className="text-[9px] px-1.5 py-0.5 rounded uppercase font-bold shrink-0"
-                      style={{ backgroundColor: `${TIER_COLORS[ach.tier]}20`, color: TIER_COLORS[ach.tier] }}
-                    >
-                      {ach.tier}
-                    </span>
+        <div className="space-y-4">
+          {/* Achievements Ladder Progress */}
+          <div className="p-3 bg-white/5 rounded-xl border border-white/10 space-y-2">
+            <p className="text-[10px] uppercase font-bold text-[#CBD5E1] tracking-widest">Achievements Progression Ladder</p>
+            <div className="flex gap-2 overflow-x-auto pb-1 text-[10px]">
+              {(['bronze', 'silver', 'gold', 'platinum', 'diamond', 'legendary', 'mythic'] as AchievementTier[]).map(t => {
+                const total = achievements.filter(x => x.tier === t).length;
+                const unlocked = achievements.filter(x => x.tier === t && x.unlocked).length;
+                return (
+                  <button
+                    key={t}
+                    onClick={() => { playButtonPress(); setSelectedTierFilter(selectedTierFilter === t ? 'all' : t); }}
+                    className={`px-2 py-1 rounded shrink-0 border capitalize font-semibold transition-all ${
+                      selectedTierFilter === t
+                        ? 'bg-white/15 text-white border-white/30'
+                        : 'bg-white/5 text-white/50 border-transparent hover:bg-white/10'
+                    }`}
+                    style={{ borderColor: selectedTierFilter === t ? TIER_COLORS[t] : undefined }}
+                  >
+                    <span style={{ color: TIER_COLORS[t] }}>●</span> {t}: {unlocked}/{total}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="space-y-2.5">
+            {achievements
+              .filter(ach => selectedTierFilter === 'all' || ach.tier === selectedTierFilter)
+              .map((ach, i) => (
+                <motion.div
+                  key={ach.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.03, type: 'spring', stiffness: 200, damping: 20 }}
+                  className={`glass-card p-3.5 transition-all duration-300 ${
+                    ach.unlocked
+                      ? 'hover:border-[#CBD5E1]/20 hover:shadow-lg hover:shadow-[#CBD5E1]/5'
+                      : 'opacity-55'
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <AnimatedAchievementBadge unlocked={ach.unlocked} tier={ach.tier} hidden={ach.hidden} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-sm font-semibold truncate ${ach.unlocked ? 'text-white' : 'text-white/40'}`}>
+                          {ach.hidden && !ach.unlocked ? '???' : ach.name}
+                        </span>
+                        <span
+                          className="text-[9px] px-1.5 py-0.5 rounded uppercase font-bold shrink-0"
+                          style={{ backgroundColor: `${TIER_COLORS[ach.tier]}20`, color: TIER_COLORS[ach.tier] }}
+                        >
+                          {ach.tier}
+                        </span>
+                      </div>
+                      <p className="text-xs text-white/45 mt-0.5 leading-relaxed">
+                        {ach.hidden && !ach.unlocked ? 'Complete secret requirements to unlock' : ach.description}
+                      </p>
+                      {ach.unlocked && ach.unlockedAt && (
+                        <p className="text-[10px] text-[#4ADE80] mt-1 font-medium">
+                          ✓ Unlocked {new Date(ach.unlockedAt).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <p className="text-xs text-white/45 mt-0.5 leading-relaxed">
-                    {ach.hidden && !ach.unlocked ? 'Complete secret requirements to unlock' : ach.description}
-                  </p>
-                  {ach.unlocked && ach.unlockedAt && (
-                    <p className="text-[10px] text-[#4ADE80] mt-1 font-medium">
-                      ✓ Unlocked {new Date(ach.unlockedAt).toLocaleDateString()}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          ))}
+                </motion.div>
+              ))}
+          </div>
         </div>
       )}
     </div>

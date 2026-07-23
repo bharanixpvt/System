@@ -121,7 +121,6 @@ interface SystemState {
   reduceQuestXP: (questId: string, newXP: number) => Promise<void>;
   
   // Level & Progression
-  voluntarilyReduceLevel: (targetLevel: number) => Promise<void>;
   purchaseUpskill: (upskillId: string) => Promise<void>;
   
   // Workout
@@ -420,15 +419,38 @@ export const useGameStore = create<SystemState>((set, get) => ({
       return;
     }
     state.profile.coins -= 50;
+    
+    // XP Reduction Penalty
+    const xpPenalty = Math.round(quest.xpReward * 0.75);
+    state.profile.totalXP = Math.max(0, state.profile.totalXP - xpPenalty);
+    
+    // Level Demotion Chance
+    const rand = Math.random();
+    let demotionChance = 0.02; // Side / Custom
+    if (quest.type === 'daily') demotionChance = 0.07;
+    else if (quest.type === 'main' || quest.type === 'boss' || quest.type === 'recovery') demotionChance = 0.25;
+    
+    let demoted = false;
+    if (rand < demotionChance && state.profile.totalLevel > 1) {
+      state.profile.totalLevel -= 1;
+      state.profile.xpToNextLevel = calculateXPToNextLevel(state.profile.totalLevel);
+      state.profile.currentRank = getRankForLevel(state.profile.totalLevel);
+      demoted = true;
+      playPenalty();
+    }
+    
     const updatedQuests = state.quests.filter(q => q.id !== questId);
     await Promise.all([
       saveProfile(state.profile),
       saveQuests(updatedQuests),
     ]);
+    
     set({
-      profile: state.profile,
+      profile: { ...state.profile },
       quests: updatedQuests,
-      systemMessage: `SYSTEM: Quest permanently removed. 50 Coins deducted.`,
+      systemMessage: demoted 
+        ? `SYSTEM WARNING: Quest abandoned. Lost ${xpPenalty} XP. DEMOTED to Level ${state.profile.totalLevel}!`
+        : `SYSTEM: Quest removed. Lost ${xpPenalty} XP. 50 Coins deducted.`,
     });
   },
 
@@ -441,20 +463,6 @@ export const useGameStore = create<SystemState>((set, get) => ({
     const updated = state.quests.map(q => q.id === questId ? quest : q);
     await saveQuests(updated);
     set({ quests: updated, systemMessage: `SYSTEM: Quest XP reduced to ${clamped} XP.` });
-  },
-
-  voluntarilyReduceLevel: async (targetLevel: number) => {
-    const state = get();
-    if (!state.profile || targetLevel >= state.profile.totalLevel || targetLevel < 1) return;
-    state.profile.totalLevel = targetLevel;
-    state.profile.totalXP = Math.round(100 * Math.pow(targetLevel, 1.08));
-    state.profile.xpToNextLevel = calculateXPToNextLevel(targetLevel);
-    state.profile.currentRank = getRankForLevel(targetLevel);
-    await saveProfile(state.profile);
-    set({
-      profile: state.profile,
-      systemMessage: `SYSTEM: Level voluntarily reduced to Lv. ${targetLevel}. Replay progression activated.`,
-    });
   },
 
   purchaseUpskill: async (upskillId: string) => {
@@ -530,9 +538,38 @@ export const useGameStore = create<SystemState>((set, get) => ({
 
   deleteCustomQuest: async (questId) => {
     const state = get();
-    const updated = state.quests.filter(q => q.id !== questId);
-    await saveQuests(updated);
-    set({ quests: updated });
+    if (!state.profile) return;
+    const quest = state.quests.find(q => q.id === questId);
+    if (!quest) return;
+
+    // XP Penalty
+    const xpPenalty = Math.round(quest.xpReward * 0.75);
+    state.profile.totalXP = Math.max(0, state.profile.totalXP - xpPenalty);
+    
+    // Demotion Chance (2% for custom side quests)
+    const rand = Math.random();
+    let demoted = false;
+    if (rand < 0.02 && state.profile.totalLevel > 1) {
+      state.profile.totalLevel -= 1;
+      state.profile.xpToNextLevel = calculateXPToNextLevel(state.profile.totalLevel);
+      state.profile.currentRank = getRankForLevel(state.profile.totalLevel);
+      demoted = true;
+      playPenalty();
+    }
+    
+    const updatedQuests = state.quests.filter(q => q.id !== questId);
+    await Promise.all([
+      saveProfile(state.profile),
+      saveQuests(updatedQuests),
+    ]);
+    
+    set({
+      profile: { ...state.profile },
+      quests: updatedQuests,
+      systemMessage: demoted 
+        ? `SYSTEM WARNING: Custom quest deleted. Lost ${xpPenalty} XP. DEMOTED to Level ${state.profile.totalLevel}!`
+        : `SYSTEM: Custom quest deleted. Lost ${xpPenalty} XP.`,
+    });
   },
 
   logWorkout: async (workout: WorkoutLog) => {

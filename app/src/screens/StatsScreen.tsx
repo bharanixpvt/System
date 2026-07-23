@@ -8,7 +8,7 @@ import { useGameStore } from '@/stores/gameStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Dumbbell, Zap, Heart, Target, Gauge, Shield, Move, Lock, BatteryCharging,
-  TrendingUp, ChevronDown, ChevronUp, EyeOff, RotateCcw, AlertOctagon, Scale, CheckCircle2, Activity, Eye, BrainCircuit, Sparkles, Cpu, Flame
+  TrendingUp, ChevronDown, ChevronUp, Scale, CheckCircle2, Activity, Eye, BrainCircuit, Sparkles, Cpu, Flame
 } from 'lucide-react';
 import type { StatName } from '@/types';
 import { STAT_CONFIG } from '@/types';
@@ -20,22 +20,14 @@ const ICON_MAP: Record<string, typeof Dumbbell> = {
 };
 
 export function StatsScreen() {
-  const { stats, profile, voluntarilyReduceLevel } = useGameStore();
+  const { stats, profile } = useGameStore();
   const [expandedStat, setExpandedStat] = useState<StatName | null>(null);
   const [showRanks, setShowRanks] = useState(false);
-  const [showDemotionModal, setShowDemotionModal] = useState(false);
-  const [targetLevelInput, setTargetLevelInput] = useState<number>(1);
 
   if (!profile) return null;
 
   const unlockedStats = stats.filter(s => s.unlocked || profile.unlockedStats?.includes(s.name));
   const lockedStats = stats.filter(s => !unlockedStats.some(u => u.name === s.name));
-
-  const handleDemote = async () => {
-    if (targetLevelInput >= profile.totalLevel || targetLevelInput < 1) return;
-    await voluntarilyReduceLevel(targetLevelInput);
-    setShowDemotionModal(false);
-  };
 
   return (
     <div className="space-y-4 pb-6">
@@ -44,12 +36,6 @@ export function StatsScreen() {
           <TrendingUp size={18} className="text-[#CBD5E1]" />
           <h1 className="text-lg font-bold">Player Attributes</h1>
         </div>
-        <button
-          onClick={() => setShowDemotionModal(true)}
-          className="flex items-center gap-1 text-xs text-red-400 bg-red-950/40 border border-red-500/30 px-2.5 py-1 rounded-lg hover:bg-red-900/50 btn-press"
-        >
-          <RotateCcw size={12} /> Level Replay
-        </button>
       </div>
 
       <button onClick={() => setShowRanks(true)} className="w-full glass-card p-3 text-left flex items-center justify-between border-[#CBD5E1]/15">
@@ -98,111 +84,70 @@ export function StatsScreen() {
                 </div>
               </div>
 
-              {/* XP Bar */}
-              <div className="mt-3">
-                <div className="stat-bar">
+              <AnimatePresence>
+                {isExpanded && (
                   <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${Math.min(100, xpPercent)}%` }}
-                    transition={{ duration: 0.8 }}
-                    className="stat-bar-fill"
-                    style={{ backgroundColor: stat.color }}
-                  />
-                </div>
-              </div>
-
-              {/* Expanded Details */}
-              {isExpanded && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  className="mt-3 pt-3 border-t border-white/5"
-                >
-                  <div className="grid grid-cols-2 gap-3 text-xs">
-                    <DetailItem label="Current XP" value={`${stat.xp}`} />
-                    <DetailItem label="XP to Next" value={`${stat.xpToNext}`} />
-                    <DetailItem label="Rank" value={stat.rank} />
-                    <DetailItem label="Pacing" value={`${Math.round(xpPercent)}%`} />
-                  </div>
-                </motion.div>
-              )}
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden mt-3 pt-3 border-t border-white/5 space-y-3"
+                  >
+                    <div>
+                      <div className="flex justify-between text-xs text-white/50 mb-1">
+                        <span>XP Progress</span>
+                        <span>{stat.xp} / {stat.xpToNext} XP</span>
+                      </div>
+                      <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                        <div
+                          className="h-full transition-all duration-300"
+                          style={{ backgroundColor: stat.color, width: `${xpPercent}%` }}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 pt-1 text-xs">
+                      <DetailItem label="Stat Tier" value={stat.rank} />
+                      <DetailItem label="Total Stat XP" value={`${stat.xp} XP`} />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           );
         })}
       </div>
 
-      {/* Hidden / Locked Attributes Section */}
+      {/* Locked Stats Section */}
       {lockedStats.length > 0 && (
-        <div className="space-y-3 pt-4">
-          <div className="flex items-center gap-2">
-            <EyeOff size={14} className="text-white/40" />
-            <div className="text-xs font-bold text-white/40 tracking-wider uppercase">Locked Attributes ({lockedStats.length})</div>
-          </div>
+        <div className="space-y-2 pt-2">
+          <div className="text-xs font-bold text-white/30 tracking-wider uppercase">Locked Attributes ({lockedStats.length})</div>
           <div className="grid grid-cols-1 gap-2">
-            {lockedStats.map(stat => (
-              <div key={stat.name} className="glass-card p-3 opacity-60 flex items-center justify-between border-white/5">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
-                    <Lock size={14} className="text-white/40" />
+            {lockedStats.map((stat) => {
+              const Icon = ICON_MAP[STAT_CONFIG[stat.name]?.icon] || Lock;
+              return (
+                <div key={stat.name} className="glass-card p-3 flex items-center justify-between border-dashed border-white/10 opacity-60">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center text-white/30">
+                      <Icon size={16} />
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold text-white/60">{stat.displayName}</div>
+                      <div className="text-[10px] text-white/40">Requires SYSTEM Upskill Activation</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-xs font-semibold text-white/70">{stat.displayName}</div>
-                    <div className="text-[10px] text-white/40">Unlock via Leveling or SYSTEM Repository Upskills</div>
+                  <div className="flex items-center gap-1 text-xs text-purple-400 font-bold bg-purple-950/30 px-2.5 py-1 rounded-lg border border-purple-500/20">
+                    <Lock size={12} /> LOCKED
                   </div>
                 </div>
-                <span className="text-xs text-white/30 font-mono">LOCKED</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
 
-      {showRanks && <RankingsModal onClose={() => setShowRanks(false)} />}
-
-      {/* Voluntary Level Reduction Modal */}
+      {/* Ranks Ladder Modal */}
       <AnimatePresence>
-        {showDemotionModal && (
-          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="glass-card p-6 max-w-sm w-full border-red-500/30"
-            >
-              <div className="flex items-center gap-3 text-red-400 mb-3">
-                <AlertOctagon size={24} />
-                <h3 className="text-lg font-bold text-white">Voluntary Level Reduction</h3>
-              </div>
-              <p className="text-xs text-white/60 mb-4 leading-relaxed">
-                Voluntarily reduce your total level to replay progression or increase challenge. Achievements, coins, and titles will remain intact.
-              </p>
-              <div className="mb-4">
-                <label className="text-xs text-white/50 block mb-1">Target Level (Current: Lv.{profile.totalLevel})</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={profile.totalLevel - 1}
-                  value={targetLevelInput}
-                  onChange={e => setTargetLevelInput(Number(e.target.value))}
-                  className="w-full bg-white/5 border border-white/20 rounded-xl p-2.5 text-sm text-white focus:border-red-500 outline-none"
-                />
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setShowDemotionModal(false)}
-                  className="flex-1 py-2.5 rounded-xl bg-white/5 text-white/70 text-xs font-semibold"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleDemote}
-                  className="flex-1 py-2.5 rounded-xl bg-red-600/30 border border-red-500/50 text-red-200 text-xs font-bold hover:bg-red-600/50"
-                >
-                  Confirm Reduction
-                </button>
-              </div>
-            </motion.div>
-          </div>
+        {showRanks && (
+          <RankingsModal onClose={() => setShowRanks(false)} />
         )}
       </AnimatePresence>
     </div>
