@@ -220,6 +220,33 @@ export function processRules(input: RuleEngineInput): RuleEngineOutput {
     }
   }
 
+  // 10. Daily Quest Reminder Notification
+  const activeDailyQuests = quests.filter(q => q.type === 'daily' && q.status === 'active');
+  if (activeDailyQuests.length > 0) {
+    notifications.push({
+      id: `notif-daily-reminder-${Date.now()}`,
+      type: 'info',
+      title: 'SYSTEM: Daily Quest Reminder',
+      message: `You have ${activeDailyQuests.length} active daily quests awaiting completion. Complete them to maintain your streak & discipline!`,
+      timestamp: new Date(),
+      read: false,
+      autoDismiss: true,
+    });
+  }
+
+  // 11. Body Fat & Biometric Coaching Advisory
+  if (profile.bodyFat && profile.bodyFat >= 20) {
+    notifications.push({
+      id: `notif-bodyfat-coach-${Date.now()}`,
+      type: 'info',
+      title: 'SYSTEM: Biometric Optimization Advisory',
+      message: `Estimated Body Fat: ${profile.bodyFat}%. Recomposition Quests engaged to accelerate fat oxidation.`,
+      timestamp: new Date(),
+      read: false,
+      autoDismiss: true,
+    });
+  }
+
   return {
     notifications,
     newQuests,

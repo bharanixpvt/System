@@ -106,7 +106,11 @@ export interface DailyScheduleConfig {
 export interface OnboardingData {
   preferredName: string;
   age: number;
-  dateOfBirth?: string;
+  dateOfBirth: string;
+  gender: 'male' | 'female';
+  weightKg: number;
+  heightCm: number;
+  bodyFatPercent: number;
   country: string;
   language: string;
   timezone: string;
@@ -117,6 +121,7 @@ export interface OnboardingData {
   equipment: EquipmentOption[];
   fitnessLevel: FitnessLevelOption;
   limitations: string;
+  injuries?: string[];
   schedule: DailyScheduleConfig;
 }
 

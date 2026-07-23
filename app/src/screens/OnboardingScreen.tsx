@@ -40,19 +40,43 @@ export const STAGE_LABELS = [
 ];
 
 const GOAL_OPTIONS = [
-  'Get Stronger',
-  'Build Muscle',
-  'Lose Weight',
-  'Become Faster',
-  'Improve Balance',
-  'Learn Self Defense',
-  'Improve My Health',
-  'Quit Porn',
-  'Reduce Screen Time',
-  'Improve Focus',
-  'Sleep Better',
-  'Build Discipline',
-  'Become More Confident',
+  'Lose Fat & Build Muscle',
+  'Build Muscle & Get Stronger',
+  'Quit Porn & Reset Dopamine',
+  'Reduce Phone & Screen Time',
+  'Improve Cardio & Stamina',
+  'Fix Posture & Joint Flexibility',
+  'Improve Concentration & Focus',
+];
+
+const INJURY_OPTIONS = [
+  'None / Fully Operational',
+  'Lower Back / Spinal Sensitivity',
+  'Knee Joint Vulnerability',
+  'Shoulder Impingement',
+  'Wrist / Elbow Strain',
+  'Ankle Instability',
+];
+
+
+const COUNTRIES = [
+  'United States', 'India', 'United Kingdom', 'Canada', 'Australia',
+  'Germany', 'France', 'Japan', 'Brazil', 'Singapore', 'UAE',
+  'South Korea', 'Italy', 'Spain', 'Netherlands', 'Switzerland',
+  'Mexico', 'Indonesia', 'Other'
+];
+
+const LANGUAGES = [
+  'English', 'Spanish', 'Hindi', 'French', 'German',
+  'Japanese', 'Mandarin Chinese', 'Portuguese', 'Russian',
+  'Arabic', 'Italian', 'Korean', 'Other'
+];
+
+const TIMEZONES = [
+  'UTC-12:00', 'UTC-10:00 (Hawaii)', 'UTC-08:00 (PST)', 'UTC-07:00 (MST)',
+  'UTC-06:00 (CST)', 'UTC-05:00 (EST)', 'UTC+00:00 (GMT/UTC)', 'UTC+01:00 (CET)',
+  'UTC+03:00 (MSK)', 'UTC+05:30 (IST)', 'UTC+08:00 (SGT)', 'UTC+09:00 (JST)',
+  'UTC+10:00 (AEST)', 'UTC+12:00 (NZST)'
 ];
 
 const TIME_OPTIONS = [
@@ -83,6 +107,25 @@ const LIFE_SITUATIONS: LifeSituation[] = [
   'Other',
 ];
 
+function calculateAgeFromDOB(dob: string): number {
+  if (!dob) return 24;
+  const birth = new Date(dob);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+  return age > 0 ? age : 24;
+}
+
+function calculateBodyFat(weightKg: number, heightCm: number, age: number, gender: 'male' | 'female'): number {
+  if (!weightKg || !heightCm || !age) return 18;
+  const heightM = heightCm / 100;
+  const bmi = weightKg / (heightM * heightM);
+  const genderFactor = gender === 'male' ? 1 : 0;
+  const bf = (1.20 * bmi) + (0.23 * age) - (10.8 * genderFactor) - 5.4;
+  return Math.max(5, Math.min(50, Math.round(bf * 10) / 10));
+}
+
 export function OnboardingScreen() {
   const { completeOnboarding } = useGameStore();
   const [step, setStep] = useState<number>(0);
@@ -90,10 +133,13 @@ export function OnboardingScreen() {
 
   // Form State
   const [preferredName, setPreferredName] = useState('');
-  const [age, setAge] = useState<number | ''>('');
-  const [country, setCountry] = useState('');
-  const [language, setLanguage] = useState('');
-  const [timezone, setTimezone] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [gender, setGender] = useState<'male' | 'female'>('male');
+  const [weightKg, setWeightKg] = useState<number | ''>('');
+  const [heightCm, setHeightCm] = useState<number | ''>('');
+  const [country, setCountry] = useState('United States');
+  const [language, setLanguage] = useState('English');
+  const [timezone, setTimezone] = useState('UTC+00:00 (GMT/UTC)');
   const [purpose] = useState('Mastering my physical and mental potential.');
 
   const [lifeSituation, setLifeSituation] = useState<LifeSituation>('Working Professional');
@@ -102,18 +148,40 @@ export function OnboardingScreen() {
   const [goals, setGoals] = useState<string[]>([]);
   const [equipment, setEquipment] = useState<EquipmentOption[]>([]);
   const [fitnessLevel, setFitnessLevel] = useState<FitnessLevelOption>('Beginner');
-  const [limitations, setLimitations] = useState('');
+  const [selectedInjuries, setSelectedInjuries] = useState<string[]>(['None / Fully Operational']);
 
-  const [wakeTime, setWakeTime] = useState('');
-  const [sleepTime, setSleepTime] = useState('');
-  const [workHours, setWorkHours] = useState('');
-  const [preferredTrainingTime, setPreferredTrainingTime] = useState('');
+  const [wakeTime, setWakeTime] = useState('07:00');
+  const [sleepTime, setSleepTime] = useState('23:00');
+  const [workHours, setWorkHours] = useState('09:00 - 17:00');
+  const [preferredTrainingTime, setPreferredTrainingTime] = useState('18:00');
+
+  const calculatedAge = calculateAgeFromDOB(dateOfBirth);
+  const estimatedBodyFat = calculateBodyFat(
+    typeof weightKg === 'number' ? weightKg : 70,
+    typeof heightCm === 'number' ? heightCm : 175,
+    calculatedAge,
+    gender
+  );
 
   const toggleGoal = (g: string) => {
     if (goals.includes(g)) {
       setGoals(goals.filter(item => item !== g));
     } else {
       setGoals([...goals, g]);
+    }
+  };
+
+  const toggleInjury = (inj: string) => {
+    if (inj === 'None / Fully Operational') {
+      setSelectedInjuries(['None / Fully Operational']);
+      return;
+    }
+    const filtered = selectedInjuries.filter(i => i !== 'None / Fully Operational');
+    if (filtered.includes(inj)) {
+      const next = filtered.filter(i => i !== inj);
+      setSelectedInjuries(next.length === 0 ? ['None / Fully Operational'] : next);
+    } else {
+      setSelectedInjuries([...filtered, inj]);
     }
   };
 
@@ -129,17 +197,23 @@ export function OnboardingScreen() {
     setIsSyncing(true);
     const data: OnboardingData = {
       preferredName: preferredName.trim() || 'Player',
-      age: typeof age === 'number' && age > 0 ? age : 24,
-      country: country.trim() || 'Earth',
-      language: language.trim() || 'English',
-      timezone: timezone.trim() || 'GMT',
+      age: calculatedAge,
+      dateOfBirth: dateOfBirth || '2000-01-01',
+      gender,
+      weightKg: typeof weightKg === 'number' ? weightKg : 70,
+      heightCm: typeof heightCm === 'number' ? heightCm : 175,
+      bodyFatPercent: estimatedBodyFat,
+      country,
+      language,
+      timezone,
       purpose: purpose || 'Mastering physical and mental potential.',
       lifeSituation: lifeSituation || 'Working Professional',
       availableTimeMinutes: availableTimeMinutes || 30,
-      goals: goals.length > 0 ? goals : ['Get Stronger', 'Improve My Health', 'Build Discipline'],
+      goals: goals.length > 0 ? goals : ['Lose Fat & Build Muscle'],
       equipment: equipment.length > 0 ? equipment : ['Bodyweight Only'],
       fitnessLevel: fitnessLevel || 'Beginner',
-      limitations,
+      limitations: selectedInjuries.join(', '),
+      injuries: selectedInjuries,
       schedule: {
         wakeTime: wakeTime || '07:00',
         sleepTime: sleepTime || '23:00',
@@ -194,8 +268,8 @@ export function OnboardingScreen() {
                 <div className="w-12 h-12 rounded-xl bg-[#CBD5E1]/15 border border-[#CBD5E1]/30 flex items-center justify-center mb-4">
                   <User className="text-[#CBD5E1]" size={24} />
                 </div>
-                <div className="system-text text-[#CBD5E1] text-xs mb-1">STAGE 1: PLAYER IDENTITY</div>
-                <h2 className="text-xl font-bold mb-4">Who is the System evaluating?</h2>
+                <div className="system-text text-[#CBD5E1] text-xs mb-1">STAGE 1: PLAYER IDENTITY & BIOMETRICS</div>
+                <h2 className="text-xl font-bold mb-4">Biometric & Locational Initialization</h2>
 
                 <div className="space-y-3">
                   <div>
@@ -211,47 +285,111 @@ export function OnboardingScreen() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs text-white/60 block mb-1">Age</label>
+                      <label className="text-xs text-white/60 block mb-1">Date of Birth (DOB)</label>
                       <input
-                        type="number"
-                        placeholder="e.g. 24"
-                        value={age}
-                        onChange={e => setAge(e.target.value ? Number(e.target.value) : '')}
+                        type="date"
+                        value={dateOfBirth}
+                        onChange={e => setDateOfBirth(e.target.value)}
                         className="w-full bg-white/5 border border-white/15 rounded-xl px-3 py-2 text-sm text-white focus:border-[#CBD5E1] outline-none"
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-white/60 block mb-1">Country</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. United States, India..."
-                        value={country}
-                        onChange={e => setCountry(e.target.value)}
-                        className="w-full bg-white/5 border border-white/15 rounded-xl px-3 py-2 text-sm text-white focus:border-[#CBD5E1] outline-none"
-                      />
+                      <label className="text-xs text-white/60 block mb-1">Gender</label>
+                      <div className="flex gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setGender('male')}
+                          className={`flex-1 py-2 rounded-xl border text-xs font-semibold ${
+                            gender === 'male' ? 'bg-[#CBD5E1]/20 border-[#CBD5E1] text-white' : 'bg-white/5 border-white/10 text-white/50'
+                          }`}
+                        >
+                          Male
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setGender('female')}
+                          className={`flex-1 py-2 rounded-xl border text-xs font-semibold ${
+                            gender === 'female' ? 'bg-[#CBD5E1]/20 border-[#CBD5E1] text-white' : 'bg-white/5 border-white/10 text-white/50'
+                          }`}
+                        >
+                          Female
+                        </button>
+                      </div>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs text-white/60 block mb-1">Language</label>
+                      <label className="text-xs text-white/60 block mb-1">Height (cm)</label>
                       <input
-                        type="text"
-                        placeholder="e.g. English..."
-                        value={language}
-                        onChange={e => setLanguage(e.target.value)}
+                        type="number"
+                        placeholder="e.g. 175"
+                        value={heightCm}
+                        onChange={e => setHeightCm(e.target.value ? Number(e.target.value) : '')}
                         className="w-full bg-white/5 border border-white/15 rounded-xl px-3 py-2 text-sm text-white focus:border-[#CBD5E1] outline-none"
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-white/60 block mb-1">Timezone</label>
+                      <label className="text-xs text-white/60 block mb-1">Weight (kg)</label>
                       <input
-                        type="text"
-                        placeholder="e.g. GMT-5..."
-                        value={timezone}
-                        onChange={e => setTimezone(e.target.value)}
+                        type="number"
+                        placeholder="e.g. 70"
+                        value={weightKg}
+                        onChange={e => setWeightKg(e.target.value ? Number(e.target.value) : '')}
                         className="w-full bg-white/5 border border-white/15 rounded-xl px-3 py-2 text-sm text-white focus:border-[#CBD5E1] outline-none"
                       />
+                    </div>
+                  </div>
+
+                  {/* Auto-calculated Body Fat % Card */}
+                  <div className="p-3 rounded-xl bg-[#CBD5E1]/10 border border-[#CBD5E1]/20 flex items-center justify-between">
+                    <div>
+                      <div className="text-[10px] text-white/50 uppercase tracking-widest">Auto Biometric Scan</div>
+                      <div className="text-xs font-semibold text-white/90">Age: <span className="text-[#38BDF8]">{calculatedAge} yrs</span></div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-[10px] text-white/50 uppercase tracking-widest">Est. Body Fat</div>
+                      <div className="text-sm font-bold text-[#4ADE80]">{estimatedBodyFat}%</div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-white/60 block mb-1">Country</label>
+                    <select
+                      value={country}
+                      onChange={e => setCountry(e.target.value)}
+                      className="w-full bg-[#0F172A] border border-white/15 rounded-xl px-3 py-2 text-sm text-white focus:border-[#CBD5E1] outline-none"
+                    >
+                      {COUNTRIES.map(c => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs text-white/60 block mb-1">Language</label>
+                      <select
+                        value={language}
+                        onChange={e => setLanguage(e.target.value)}
+                        className="w-full bg-[#0F172A] border border-white/15 rounded-xl px-3 py-2 text-sm text-white focus:border-[#CBD5E1] outline-none"
+                      >
+                        {LANGUAGES.map(l => (
+                          <option key={l} value={l}>{l}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-white/60 block mb-1">Timezone</label>
+                      <select
+                        value={timezone}
+                        onChange={e => setTimezone(e.target.value)}
+                        className="w-full bg-[#0F172A] border border-white/15 rounded-xl px-3 py-2 text-sm text-white focus:border-[#CBD5E1] outline-none"
+                      >
+                        {TIMEZONES.map(tz => (
+                          <option key={tz} value={tz}>{tz}</option>
+                        ))}
+                      </select>
                     </div>
                   </div>
                 </div>
@@ -407,17 +545,30 @@ export function OnboardingScreen() {
                   <AlertTriangle className="text-[#CBD5E1]" size={24} />
                 </div>
                 <div className="system-text text-[#CBD5E1] text-xs mb-1">STAGE 7: PHYSICAL EXCLUSIONS</div>
-                <h2 className="text-xl font-bold mb-2">Any injuries or medical limitations?</h2>
+                <h2 className="text-xl font-bold mb-2">Any injuries or joint limitations?</h2>
                 <p className="text-xs text-white/55 mb-4">
-                  The SYSTEM will exclude high-risk quests to protect your body.
+                  Select all applicable conditions. The SYSTEM will tailor quest mechanics to avoid strain.
                 </p>
-                <textarea
-                  rows={4}
-                  placeholder="e.g. Lower back pain, left shoulder stiffness, knee injury..."
-                  value={limitations}
-                  onChange={e => setLimitations(e.target.value)}
-                  className="w-full bg-white/5 border border-white/15 rounded-xl p-3 text-sm text-white focus:border-[#CBD5E1] outline-none"
-                />
+                <div className="grid grid-cols-1 gap-2">
+                  {INJURY_OPTIONS.map(inj => {
+                    const selected = selectedInjuries.includes(inj);
+                    return (
+                      <button
+                        key={inj}
+                        type="button"
+                        onClick={() => toggleInjury(inj)}
+                        className={`p-3 rounded-xl border text-left text-sm flex items-center justify-between transition-all ${
+                          selected
+                            ? 'bg-[#CBD5E1]/20 border-[#CBD5E1] text-white font-semibold'
+                            : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10'
+                        }`}
+                      >
+                        <span>{inj}</span>
+                        {selected && <Check size={16} className="text-[#CBD5E1]" />}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
 
@@ -426,8 +577,8 @@ export function OnboardingScreen() {
                 <div className="w-12 h-12 rounded-xl bg-[#CBD5E1]/15 border border-[#CBD5E1]/30 flex items-center justify-center mb-4">
                   <Calendar className="text-[#CBD5E1]" size={24} />
                 </div>
-                <div className="system-text text-[#CBD5E1] text-xs mb-1">STAGE 8: DAILY SCHEDULE</div>
-                <h2 className="text-xl font-bold mb-3">Sync your daily clock</h2>
+                <div className="system-text text-[#CBD5E1] text-xs mb-1">STAGE 8: CIRCADIAN SCHEDULE</div>
+                <h2 className="text-xl font-bold mb-3">Sync your daily clock & training window</h2>
 
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-3">
@@ -455,6 +606,7 @@ export function OnboardingScreen() {
                     <label className="text-xs text-white/60 block mb-1">Work / College Hours</label>
                     <input
                       type="text"
+                      placeholder="e.g. 09:00 - 17:00"
                       value={workHours}
                       onChange={e => setWorkHours(e.target.value)}
                       className="w-full bg-white/5 border border-white/15 rounded-xl px-3 py-2 text-sm text-white focus:border-[#CBD5E1] outline-none"
@@ -462,12 +614,12 @@ export function OnboardingScreen() {
                   </div>
 
                   <div>
-                    <label className="text-xs text-white/60 block mb-1">Preferred Quest Window</label>
+                    <label className="text-xs text-white/60 block mb-1">When will you perform SYSTEM Quests?</label>
                     <input
                       type="time"
                       value={preferredTrainingTime}
                       onChange={e => setPreferredTrainingTime(e.target.value)}
-                      className="w-full bg-white/5 border border-white/15 rounded-xl px-3 py-2 text-sm text-white focus:border-[#CBD5E1] outline-none"
+                      className="w-full bg-white/5 border border-white/15 rounded-xl px-3 py-2.5 text-sm text-white focus:border-[#CBD5E1] outline-none font-mono"
                     />
                   </div>
                 </div>
